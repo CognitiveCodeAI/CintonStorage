@@ -1,6 +1,5 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { Decimal } from '@prisma/client/runtime/library';
 import {
   createVehicleCaseSchema,
   completeIntakeSchema,
@@ -11,7 +10,7 @@ import { router, protectedProcedure } from '../trpc';
 import { generateCaseNumber } from '../services/caseNumber';
 
 interface FeeLedgerEntry {
-  amount: Decimal;
+  amount: number | string | { toNumber(): number };
 }
 
 export const vehicleCaseRouter = router({
