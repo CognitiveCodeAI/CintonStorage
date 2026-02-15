@@ -1,0 +1,566 @@
+// Cinton Storage - Impound Lot Management System
+// Prisma Schema Definition
+// Version: 1.0.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("clinton_POSTGRES_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum VehicleCaseStatus {
+  PENDING_INTAKE
+  INTAKE_COMPLETE
+  STORED
+  HOLD
+  RELEASE_ELIGIBLE
+  RELEASED
+  AUCTION_ELIGIBLE
+  AUCTION_LISTED
+  SOLD
+  DISPOSED
+}
+
+enum TowReason {
+  ABANDONED
+  ACCIDENT
+  ARREST
+  ILLEGALLY_PARKED
+  EVIDENCE
+  PRIVATE_PROPERTY
+  REPOSSESSION
+  OTHER
+}
+
+enum VehicleType {
+  SEDAN
+  SUV
+  TRUCK
+  VAN
+  MOTORCYCLE
+  TRAILER
+  RV
+  COMMERCIAL
+  OTHER
+}
+
+enum VehicleClass {
+  STANDARD
+  LARGE
+  MOTORCYCLE
+  OVERSIZED
+  TRAILER
+}
+
+enum FeeType {
+  TOW
+  ADMIN
+  STORAGE_DAILY
+  GATE
+  LIEN_PROCESSING
+  TITLE_SEARCH
+  NOTICE
+  DOLLY
+  WINCH
+  MILEAGE
+  STORAGE_OVERRIDE
+  ADJUSTMENT
+  PAYMENT
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CREDIT_CARD
+  DEBIT_CARD
+  MONEY_ORDER
+  CERTIFIED_CHECK
+  ACH
+  AGENCY_VOUCHER
+}
+
+enum NoticeType {
+  OWNER_INITIAL
+  OWNER_REMINDER
+  LIENHOLDER
+  MDOS_TR52P
+  AUCTION_PUBLIC
+  AUCTION_DIRECT
+  HEARING_NOTICE
+  HEARING_RESULT
+  HIGH_VALUE
+  COMMERCIAL
+}
+
+enum RecipientType {
+  REGISTERED_OWNER
+  LIENHOLDER
+  MDOS
+  PUBLIC
+  OTHER
+}
+
+enum SendMethod {
+  CERTIFIED_MAIL
+  FIRST_CLASS_MAIL
+  EMAIL
+  PUBLICATION
+  ELECTRONIC_FILING
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  RETURNED
+  UNDELIVERABLE
+  UNKNOWN
+}
+
+enum HearingResult {
+  PENDING
+  OWNER_PREVAILED
+  LOT_PREVAILED
+  DISMISSED
+  NO_SHOW
+  SETTLED
+}
+
+enum AuctionLotStatus {
+  PENDING
+  LISTED
+  ACTIVE
+  SOLD
+  NO_SALE
+  WITHDRAWN
+  TITLE_PENDING
+  COMPLETED
+}
+
+enum TitleStatus {
+  PENDING
+  APPLIED
+  ISSUED
+  TRANSFERRED
+  BONDED
+}
+
+enum AgencyType {
+  POLICE
+  SHERIFF
+  STATE_POLICE
+  MUNICIPAL
+  PRIVATE
+  OTHER
+}
+
+enum DocumentType {
+  INTAKE_PHOTO
+  DAMAGE_PHOTO
+  VIN_PHOTO
+  PLATE_PHOTO
+  ODOMETER_PHOTO
+  RELEASE_PHOTO
+  TOW_RECEIPT
+  POLICE_REPORT
+  TITLE_DOCUMENT
+  REGISTRATION
+  INSURANCE
+  RELEASE_AUTHORIZATION
+  HEARING_DOCUMENT
+  NOTICE_COPY
+  CERTIFIED_MAIL_RECEIPT
+  OTHER
+}
+
+enum AuditEventType {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  VIEW
+  SEARCH
+  EXPORT
+  PAYMENT_RECEIVED
+  FEE_ACCRUED
+  NOTICE_SENT
+  HOLD_PLACED
+  HOLD_RELEASED
+  VEHICLE_RELEASED
+  AUCTION_LISTED
+  AUCTION_SOLD
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGED
+  API_KEY_CREATED
+  API_KEY_REVOKED
+  WEBHOOK_SENT
+  WEBHOOK_FAILED
+}
+
+enum ActorType {
+  USER
+  SYSTEM
+  AGENCY_API
+  WEBHOOK
+  PUBLIC
+}
+
+enum PolicyType {
+  FEE_SCHEDULE
+  COMPLIANCE_TIMELINE
+  HOLD_DURATION
+  AUCTION_RULES
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  passwordHash    String    @map("password_hash")
+  roleId          String    @map("role_id")
+  role            Role      @relation(fields: [roleId], references: [id])
+  agencyId        String?   @map("agency_id")
+  agency          Agency?   @relation(fields: [agencyId], references: [id])
+  active          Boolean   @default(true)
+  lastLoginAt     DateTime? @map("last_login_at")
+  passwordChangedAt DateTime? @map("password_changed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  createdVehicleCases   VehicleCase[]      @relation("VehicleCaseCreatedBy")
+  updatedVehicleCases   VehicleCase[]      @relation("VehicleCaseUpdatedBy")
+  feeLedgerEntries      FeeLedgerEntry[]
+  complianceNotices     ComplianceNotice[]
+  caseDocuments         CaseDocument[]
+  auctionLots           AuctionLot[]
+  policyConfigs         PolicyConfig[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  permissions String[] // Array of permission strings
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users User[]
+
+  @@map("roles")
+}
+
+model Agency {
+  id              String     @id @default(uuid())
+  name            String
+  orisCode        String?    @unique @map("oris_code")
+  agencyType      AgencyType @map("agency_type")
+  contactName     String?    @map("contact_name")
+  contactEmail    String     @map("contact_email")
+  contactPhone    String?    @map("contact_phone")
+  address         String?
+
+  // API access
+  apiKeyHash      String?  @map("api_key_hash")
+  apiKeyPrefix    String?  @map("api_key_prefix")
+  apiEnabled      Boolean  @default(false) @map("api_enabled")
+  webhookUrl      String?  @map("webhook_url")
+  webhookSecret   String?  @map("webhook_secret")
+
+  // OAuth clients
+  oauthClientId          String? @map("oauth_client_id")
+  oauthClientSecretHash  String? @map("oauth_client_secret_hash")
+
+  // Settings
+  defaultHoldDays       Int     @default(14) @map("default_hold_days")
+  autoNotifyOnIntake    Boolean @default(false) @map("auto_notify_on_intake")
+  autoNotifyOnRelease   Boolean @default(false) @map("auto_notify_on_release")
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users         User[]
+  vehicleCases  VehicleCase[]
+  apiKeys       AgencyApiKey[]
+
+  @@map("agencies")
+}
+
+model AgencyApiKey {
+  id          String    @id @default(uuid())
+  agencyId    String    @map("agency_id")
+  agency      Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  keyHash     String    @map("key_hash")
+  prefix      String    // First 8 chars for identification
+  name        String
+  scopes      String[]  // Authorized scopes
+  ipWhitelist String[]  @map("ip_whitelist")
+  expiresAt   DateTime? @map("expires_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  revokedAt   DateTime? @map("revoked_at")
+
+  @@index([prefix])
+  @@map("agency_api_keys")
+}
+
+model VehicleCase {
+  id          String            @id @default(uuid())
+  caseNumber  String            @unique @map("case_number")
+  status      VehicleCaseStatus @default(PENDING_INTAKE)
+
+  // Vehicle identification
+  vin         String?
+  plateNumber String? @map("plate_number")
+  plateState  String? @map("plate_state")
+  year        Int?
+  make        String?
+  model       String?
+  color       String?
+  vehicleType VehicleType @map("vehicle_type")
+  vehicleClass VehicleClass @map("vehicle_class")
+
+  // Tow information
+  towDate         DateTime  @map("tow_date")
+  intakeDate      DateTime? @map("intake_date")
+  towReason       TowReason @map("tow_reason")
+  towLocation     String    @map("tow_location")
+  towingAgencyId  String?   @map("towing_agency_id")
+  towingAgency    Agency?   @relation(fields: [towingAgencyId], references: [id])
+  yardLocation    String?   @map("yard_location")
+
+  // Owner/lienholder
+  ownerName         String? @map("owner_name")
+  ownerAddress      String? @map("owner_address")
+  ownerPhone        String? @map("owner_phone")
+  lienholderName    String? @map("lienholder_name")
+  lienholderAddress String? @map("lienholder_address")
+
+  // Police/legal
+  policeHold        Boolean   @default(false) @map("police_hold")
+  holdExpiresAt     DateTime? @map("hold_expires_at")
+  policeCaseNumber  String?   @map("police_case_number")
+
+  // Release/auction eligibility
+  releaseEligibleAt DateTime? @map("release_eligible_at")
+  releasedAt        DateTime? @map("released_at")
+  releasedTo        String?   @map("released_to")
+  auctionEligibleAt DateTime? @map("auction_eligible_at")
+
+  // Decoded VIN data (JSONB)
+  vinDecodeData Json? @map("vin_decode_data")
+
+  // Flexible metadata (JSONB)
+  metadata Json @default("{}")
+
+  // Audit
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdById String   @map("created_by_id")
+  createdBy   User     @relation("VehicleCaseCreatedBy", fields: [createdById], references: [id])
+  updatedById String   @map("updated_by_id")
+  updatedBy   User     @relation("VehicleCaseUpdatedBy", fields: [updatedById], references: [id])
+
+  // Relations
+  feeLedgerEntries   FeeLedgerEntry[]
+  complianceNotices  ComplianceNotice[]
+  documents          CaseDocument[]
+  auctionLots        AuctionLot[]
+
+  @@index([status])
+  @@index([vin])
+  @@index([plateNumber, plateState])
+  @@index([towDate])
+  @@index([caseNumber])
+  @@index([policeHold])
+  @@map("vehicle_cases")
+}
+
+model FeeLedgerEntry {
+  id            String        @id @default(uuid())
+  vehicleCaseId String        @map("vehicle_case_id")
+  vehicleCase   VehicleCase   @relation(fields: [vehicleCaseId], references: [id], onDelete: Cascade)
+  feeType       FeeType       @map("fee_type")
+  description   String
+  amount        Decimal       @db.Decimal(10, 2) // Positive = charge, negative = payment
+  accrualDate   DateTime      @map("accrual_date")
+  dueDate       DateTime?     @map("due_date")
+  paidAt        DateTime?     @map("paid_at")
+  paymentMethod PaymentMethod? @map("payment_method")
+  receiptNumber String?       @map("receipt_number")
+  voidedAt      DateTime?     @map("voided_at")
+  voidReason    String?       @map("void_reason")
+  createdById   String        @map("created_by_id")
+  createdBy     User          @relation(fields: [createdById], references: [id])
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([vehicleCaseId])
+  @@index([accrualDate])
+  @@index([feeType])
+  @@map("fee_ledger_entries")
+}
+
+model ComplianceNotice {
+  id              String         @id @default(uuid())
+  vehicleCaseId   String         @map("vehicle_case_id")
+  vehicleCase     VehicleCase    @relation(fields: [vehicleCaseId], references: [id], onDelete: Cascade)
+  noticeType      NoticeType     @map("notice_type")
+  recipientType   RecipientType  @map("recipient_type")
+  recipientName   String?        @map("recipient_name")
+  recipientAddress String?       @map("recipient_address")
+  sentAt          DateTime?      @map("sent_at")
+  sendMethod      SendMethod     @map("send_method")
+  trackingNumber  String?        @map("tracking_number")
+  deliveryStatus  DeliveryStatus @default(PENDING) @map("delivery_status")
+  deliveredAt     DateTime?      @map("delivered_at")
+  responseDueAt   DateTime?      @map("response_due_at")
+  responseReceived Boolean       @default(false) @map("response_received")
+  responseReceivedAt DateTime?   @map("response_received_at")
+  hearingRequested Boolean       @default(false) @map("hearing_requested")
+  hearingRequestedAt DateTime?   @map("hearing_requested_at")
+  hearingDate     DateTime?      @map("hearing_date")
+  hearingResult   HearingResult? @map("hearing_result")
+  metadata        Json           @default("{}")
+  createdById     String         @map("created_by_id")
+  createdBy       User           @relation(fields: [createdById], references: [id])
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@index([vehicleCaseId])
+  @@index([noticeType])
+  @@index([responseDueAt])
+  @@index([hearingRequested, hearingResult])
+  @@map("compliance_notices")
+}
+
+model CaseDocument {
+  id            String       @id @default(uuid())
+  vehicleCaseId String       @map("vehicle_case_id")
+  vehicleCase   VehicleCase  @relation(fields: [vehicleCaseId], references: [id], onDelete: Cascade)
+  documentType  DocumentType @map("document_type")
+  fileName      String       @map("file_name")
+  filePath      String       @map("file_path") // S3 key
+  fileHash      String       @map("file_hash") // SHA-256
+  mimeType      String       @map("mime_type")
+  fileSize      Int          @map("file_size") // bytes
+  metadata      Json         @default("{}")
+  uploadedById  String       @map("uploaded_by_id")
+  uploadedBy    User         @relation(fields: [uploadedById], references: [id])
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  @@index([vehicleCaseId])
+  @@index([documentType])
+  @@map("case_documents")
+}
+
+model AuctionLot {
+  id            String          @id @default(uuid())
+  vehicleCaseId String          @map("vehicle_case_id")
+  vehicleCase   VehicleCase     @relation(fields: [vehicleCaseId], references: [id])
+  lotNumber     String          @map("lot_number")
+  auctionDate   DateTime        @map("auction_date")
+  minimumBid    Decimal         @db.Decimal(10, 2) @map("minimum_bid")
+  status        AuctionLotStatus @default(PENDING)
+  winningBid    Decimal?        @db.Decimal(10, 2) @map("winning_bid")
+  buyerId       String?         @map("buyer_id")
+  buyer         AuctionBuyer?   @relation(fields: [buyerId], references: [id])
+  saleRecordedAt DateTime?      @map("sale_recorded_at")
+  titleStatus   TitleStatus     @default(PENDING) @map("title_status")
+  payoutCompleted Boolean       @default(false) @map("payout_completed")
+  payoutCompletedAt DateTime?   @map("payout_completed_at")
+  metadata      Json            @default("{}")
+  createdById   String          @map("created_by_id")
+  createdBy     User            @relation(fields: [createdById], references: [id])
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@unique([vehicleCaseId, auctionDate])
+  @@index([auctionDate])
+  @@index([status])
+  @@map("auction_lots")
+}
+
+model AuctionBuyer {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  phone         String
+  address       String
+  taxId         String?   @map("tax_id")
+  verified      Boolean   @default(false)
+  verifiedAt    DateTime? @map("verified_at")
+  blocked       Boolean   @default(false)
+  blockedReason String?   @map("blocked_reason")
+  purchaseCount Int       @default(0) @map("purchase_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  auctionLots AuctionLot[]
+
+  @@map("auction_buyers")
+}
+
+model PolicyConfig {
+  id            String     @id @default(uuid())
+  policyType    PolicyType @map("policy_type")
+  name          String
+  description   String?
+  config        Json       // Policy-specific configuration
+  effectiveFrom DateTime   @map("effective_from")
+  effectiveTo   DateTime?  @map("effective_to")
+  mclReferences Json?      @map("mcl_references") // Michigan MCL references
+  createdById   String     @map("created_by_id")
+  createdBy     User       @relation(fields: [createdById], references: [id])
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@index([policyType, effectiveFrom, effectiveTo])
+  @@map("policy_configs")
+}
+
+model AuditEvent {
+  id          String         @id @default(uuid())
+  eventType   AuditEventType @map("event_type")
+  entityType  String         @map("entity_type")
+  entityId    String         @map("entity_id")
+  actorId     String?        @map("actor_id")
+  actorType   ActorType      @map("actor_type")
+  actorIp     String?        @map("actor_ip")
+  changes     Json?          // { field: { old: value, new: value } }
+  metadata    Json           @default("{}")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+model CaseNumberSequence {
+  id          String @id @default(uuid())
+  year        Int    @unique
+  lastNumber  Int    @map("last_number")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("case_number_sequences")
+}
