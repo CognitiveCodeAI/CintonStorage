@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm vercel-build",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "apps/api/src/**/*,packages/**/*"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/trpc/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api"
+    }
+  ]
+}

@@ -1,0 +1,1018 @@
+openapi: 3.0.3
+info:
+  title: Cinton Storage - Agency API
+  description: |
+    API for police departments and authorized agencies to interact with the
+    Cinton Storage Impound Lot Management System.
+
+    ## Authentication
+
+    This API supports two authentication methods:
+
+    1. **API Key**: Include `X-API-Key` header with your API key
+    2. **OAuth 2.0**: Use Bearer token from OAuth flow
+
+    ## Rate Limiting
+
+    | Tier | Requests/min | Requests/day |
+    |------|--------------|--------------|
+    | Standard | 60 | 10,000 |
+    | Premium | 300 | 100,000 |
+
+    Rate limit headers are included in all responses.
+
+  version: 1.0.0
+  contact:
+    name: Agency API Support
+    email: agency-support@cintonstorage.com
+
+servers:
+  - url: https://api.cintonstorage.com/agency/v1
+    description: Production
+  - url: https://staging-api.cintonstorage.com/agency/v1
+    description: Staging
+
+tags:
+  - name: Cases
+    description: Vehicle case queries
+  - name: Clearance
+    description: Police clearance submission
+  - name: Release
+    description: Release authorization
+  - name: Reports
+    description: Agency-specific reports
+  - name: Webhooks
+    description: Webhook configuration
+
+paths:
+  /cases:
+    get:
+      tags: [Cases]
+      summary: Search vehicle cases
+      description: Search for vehicle cases with various filters
+      operationId: searchCases
+      security:
+        - apiKey: []
+        - oauth2: [cases:read]
+      parameters:
+        - name: plate
+          in: query
+          description: License plate number
+          schema:
+            type: string
+        - name: plate_state
+          in: query
+          description: Plate state (2-letter code)
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+        - name: vin
+          in: query
+          description: Full or partial VIN (min 6 characters)
+          schema:
+            type: string
+            minLength: 6
+        - name: case_number
+          in: query
+          description: Case number (YY-NNNNN format)
+          schema:
+            type: string
+            pattern: '^\d{2}-\d{5}$'
+        - name: status
+          in: query
+          description: Filter by status(es)
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/VehicleCaseStatus'
+          style: form
+          explode: true
+        - name: tow_date_from
+          in: query
+          description: Start of date range (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: tow_date_to
+          in: query
+          description: End of date range (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: police_hold
+          in: query
+          description: Filter by hold status
+          schema:
+            type: boolean
+        - name: police_case_number
+          in: query
+          description: Agency's police case number
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [tow_date, case_number]
+            default: tow_date
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Search results
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /cases/{case_id}:
+    get:
+      tags: [Cases]
+      summary: Get vehicle case details
+      description: Retrieve detailed information about a specific vehicle case
+      operationId: getCase
+      security:
+        - apiKey: []
+        - oauth2: [cases:read]
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          description: Case ID (UUID) or case number
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/clearance:
+    post:
+      tags: [Clearance]
+      summary: Submit police clearance
+      description: Submit a clearance request to release a police hold
+      operationId: submitClearance
+      security:
+        - apiKey: []
+        - oauth2: [clearance:submit]
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClearanceRequest'
+      responses:
+        '200':
+          description: Clearance submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearanceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - no active hold on this case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /clearances/{clearance_id}:
+    get:
+      tags: [Clearance]
+      summary: Get clearance status
+      operationId: getClearanceStatus
+      security:
+        - apiKey: []
+        - oauth2: [clearance:submit]
+      parameters:
+        - name: clearance_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Clearance status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearanceResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/release-authorization:
+    post:
+      tags: [Release]
+      summary: Authorize vehicle release
+      description: Direct authorization for vehicle release by agency
+      operationId: authorizeRelease
+      security:
+        - apiKey: []
+        - oauth2: [release:authorize]
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseAuthorizationRequest'
+      responses:
+        '200':
+          description: Release authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseAuthorizationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reports/activity:
+    get:
+      tags: [Reports]
+      summary: Agency activity report
+      description: Get activity summary for the requesting agency
+      operationId: getActivityReport
+      security:
+        - apiKey: []
+        - oauth2: [reports:read]
+      parameters:
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Activity report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityReport'
+            text/csv:
+              schema:
+                type: string
+
+  /reports/pending-holds:
+    get:
+      tags: [Reports]
+      summary: Pending holds report
+      description: Get all vehicles currently on hold for this agency
+      operationId: getPendingHoldsReport
+      security:
+        - apiKey: []
+        - oauth2: [reports:read]
+      responses:
+        '200':
+          description: Pending holds
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HoldSummary'
+                  total:
+                    type: integer
+
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: List webhook configurations
+      operationId: listWebhooks
+      security:
+        - apiKey: []
+        - oauth2: [webhooks:manage]
+      responses:
+        '200':
+          description: Webhook configurations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookConfig'
+
+    post:
+      tags: [Webhooks]
+      summary: Create webhook configuration
+      operationId: createWebhook
+      security:
+        - apiKey: []
+        - oauth2: [webhooks:manage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+      responses:
+        '201':
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookConfig'
+
+  /webhooks/{webhook_id}:
+    delete:
+      tags: [Webhooks]
+      summary: Delete webhook configuration
+      operationId: deleteWebhook
+      security:
+        - apiKey: []
+        - oauth2: [webhooks:manage]
+      parameters:
+        - name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Webhook deleted
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Agency API key
+
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          tokenUrl: /oauth/token
+          scopes:
+            cases:read: Read vehicle cases
+            cases:write: Update vehicle cases
+            clearance:submit: Submit clearance requests
+            release:authorize: Authorize releases
+            reports:read: Access reports
+            webhooks:manage: Manage webhook configurations
+
+  headers:
+    X-RateLimit-Limit:
+      description: Request limit per minute
+      schema:
+        type: integer
+    X-RateLimit-Remaining:
+      description: Remaining requests in current window
+      schema:
+        type: integer
+    X-RateLimit-Reset:
+      description: Unix timestamp when rate limit resets
+      schema:
+        type: integer
+
+  schemas:
+    VehicleCaseStatus:
+      type: string
+      enum:
+        - PENDING_INTAKE
+        - INTAKE_COMPLETE
+        - STORED
+        - HOLD
+        - RELEASE_ELIGIBLE
+        - RELEASED
+        - AUCTION_ELIGIBLE
+        - AUCTION_LISTED
+        - SOLD
+        - DISPOSED
+
+    ClearanceType:
+      type: string
+      enum:
+        - FULL
+        - PARTIAL
+        - CONDITIONAL
+
+    CaseSearchResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CaseSummary'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    CaseSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_number:
+          type: string
+        status:
+          $ref: '#/components/schemas/VehicleCaseStatus'
+        vin:
+          type: string
+        plate:
+          type: object
+          properties:
+            number:
+              type: string
+            state:
+              type: string
+        vehicle:
+          type: object
+          properties:
+            year:
+              type: integer
+            make:
+              type: string
+            model:
+              type: string
+            color:
+              type: string
+        tow_date:
+          type: string
+          format: date-time
+        tow_reason:
+          type: string
+        tow_location:
+          type: string
+        yard_location:
+          type: string
+        police_hold:
+          type: boolean
+        hold_expires_at:
+          type: string
+          format: date-time
+        police_case_number:
+          type: string
+        fees:
+          type: object
+          properties:
+            total_charges:
+              type: number
+            total_payments:
+              type: number
+            balance:
+              type: number
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CaseDetailResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/CaseSummary'
+            - type: object
+              properties:
+                owner:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    phone:
+                      type: string
+                lienholder:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                fees:
+                  type: object
+                  properties:
+                    entries:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          description:
+                            type: string
+                          amount:
+                            type: number
+                          date:
+                            type: string
+                            format: date
+                compliance:
+                  type: object
+                  properties:
+                    notices_sent:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          sent_at:
+                            type: string
+                            format: date-time
+                          delivery_status:
+                            type: string
+                documents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                      name:
+                        type: string
+                      thumbnail_url:
+                        type: string
+                        format: uri
+                timeline:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      event:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+                      actor:
+                        type: string
+                      details:
+                        type: object
+
+    ClearanceRequest:
+      type: object
+      required: [clearance_type, officer_name, officer_badge]
+      properties:
+        clearance_type:
+          $ref: '#/components/schemas/ClearanceType'
+        officer_name:
+          type: string
+          description: Name of authorizing officer
+        officer_badge:
+          type: string
+          description: Badge or ID number
+        notes:
+          type: string
+        effective_date:
+          type: string
+          format: date-time
+          description: When clearance takes effect (defaults to now)
+        conditions:
+          type: array
+          items:
+            type: string
+          description: Conditions for CONDITIONAL clearance
+
+    ClearanceResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            clearance_id:
+              type: string
+              format: uuid
+            case_id:
+              type: string
+              format: uuid
+            case_number:
+              type: string
+            status:
+              type: string
+              enum: [PENDING, APPROVED, DENIED]
+            clearance_type:
+              $ref: '#/components/schemas/ClearanceType'
+            submitted_by:
+              type: object
+              properties:
+                name:
+                  type: string
+                badge:
+                  type: string
+                agency:
+                  type: string
+            submitted_at:
+              type: string
+              format: date-time
+            effective_at:
+              type: string
+              format: date-time
+            vehicle_status:
+              $ref: '#/components/schemas/VehicleCaseStatus'
+            hold_released:
+              type: boolean
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ReleaseAuthorizationRequest:
+      type: object
+      required: [release_to, authorization_type, authorized_by]
+      properties:
+        release_to:
+          type: object
+          required: [name, relationship]
+          properties:
+            name:
+              type: string
+            relationship:
+              type: string
+              enum: [OWNER, LIENHOLDER, AGENT, INSURANCE, AGENCY]
+            identification_type:
+              type: string
+            identification_number:
+              type: string
+        authorization_type:
+          type: string
+          enum: [AGENCY_DIRECT, AGENCY_REFERRAL]
+        waive_fees:
+          type: boolean
+          default: false
+        authorized_by:
+          type: object
+          required: [name, badge]
+          properties:
+            name:
+              type: string
+            badge:
+              type: string
+            rank:
+              type: string
+        notes:
+          type: string
+
+    ReleaseAuthorizationResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            authorization_id:
+              type: string
+              format: uuid
+            case_id:
+              type: string
+              format: uuid
+            case_number:
+              type: string
+            status:
+              type: string
+              enum: [AUTHORIZED, PENDING, DENIED]
+            release_to:
+              type: object
+              properties:
+                name:
+                  type: string
+                relationship:
+                  type: string
+            authorization_type:
+              type: string
+            fees_waived:
+              type: boolean
+            outstanding_balance:
+              type: number
+            authorized_by:
+              type: object
+              properties:
+                name:
+                  type: string
+                badge:
+                  type: string
+                agency:
+                  type: string
+            authorized_at:
+              type: string
+              format: date-time
+            valid_until:
+              type: string
+              format: date-time
+            release_instructions:
+              type: string
+            authorization_code:
+              type: string
+
+    ActivityReport:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            agency_id:
+              type: string
+              format: uuid
+            agency_name:
+              type: string
+            report_period:
+              type: object
+              properties:
+                start:
+                  type: string
+                  format: date
+                end:
+                  type: string
+                  format: date
+            summary:
+              type: object
+              properties:
+                total_tows_requested:
+                  type: integer
+                active_holds:
+                  type: integer
+                clearances_submitted:
+                  type: integer
+                releases_authorized:
+                  type: integer
+                total_fees_generated:
+                  type: number
+                fees_waived:
+                  type: number
+            by_tow_reason:
+              type: object
+              additionalProperties:
+                type: integer
+            cases:
+              type: array
+              items:
+                type: object
+                properties:
+                  case_number:
+                    type: string
+                  vin:
+                    type: string
+                  plate:
+                    type: string
+                  tow_date:
+                    type: string
+                    format: date
+                  tow_reason:
+                    type: string
+                  status:
+                    type: string
+                  total_fees:
+                    type: number
+
+    HoldSummary:
+      type: object
+      properties:
+        case_id:
+          type: string
+          format: uuid
+        case_number:
+          type: string
+        vin:
+          type: string
+        plate:
+          type: string
+        vehicle_description:
+          type: string
+        tow_date:
+          type: string
+          format: date-time
+        police_case_number:
+          type: string
+        hold_placed_at:
+          type: string
+          format: date-time
+        hold_expires_at:
+          type: string
+          format: date-time
+        days_on_hold:
+          type: integer
+        storage_accrued:
+          type: number
+
+    WebhookConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateWebhookRequest:
+      type: object
+      required: [url, events, secret]
+      properties:
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+              - case.created
+              - case.status_changed
+              - case.released
+              - hold.placed
+              - hold.released
+              - hold.expiring
+              - clearance.required
+              - notice.sent
+              - auction.scheduled
+        secret:
+          type: string
+          minLength: 16
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_pages:
+          type: integer
+
+    ResponseMeta:
+      type: object
+      properties:
+        request_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+            retry_after:
+              type: integer
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error:
+              code: BAD_REQUEST
+              message: Invalid VIN format
+
+    Unauthorized:
+      description: Authentication required or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Invalid or expired API key
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error:
+              code: FORBIDDEN
+              message: Missing required scope: clearance:submit
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Case not found
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: Rate limit exceeded. Please retry after 15 seconds.
+              retry_after: 15

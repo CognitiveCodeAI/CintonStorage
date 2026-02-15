@@ -1,0 +1,951 @@
+openapi: 3.0.3
+info:
+  title: Cinton Storage - Internal API
+  description: |
+    Internal API for the Cinton Storage Impound Lot Management System.
+    This API uses tRPC for type-safe communication but is documented here
+    in OpenAPI format for reference.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api-support@cintonstorage.com
+
+servers:
+  - url: https://api.cintonstorage.com
+    description: Production
+  - url: https://staging-api.cintonstorage.com
+    description: Staging
+  - url: http://localhost:3000
+    description: Local Development
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Vehicle Cases
+    description: Vehicle case management operations
+  - name: Fee Ledger
+    description: Fee and payment management
+  - name: Compliance
+    description: Compliance notice tracking
+  - name: Documents
+    description: Document and photo management
+  - name: Auction
+    description: Auction lot management
+  - name: Reports
+    description: Reporting and exports
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  expiresIn:
+                    type: integer
+
+  /trpc/vehicleCase.create:
+    post:
+      tags: [Vehicle Cases]
+      summary: Create new vehicle case
+      operationId: createVehicleCase
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleCaseInput'
+      responses:
+        '200':
+          description: Case created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /trpc/vehicleCase.getById:
+    get:
+      tags: [Vehicle Cases]
+      summary: Get vehicle case by ID
+      operationId: getVehicleCaseById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: input
+          in: query
+          required: true
+          schema:
+            type: string
+            description: JSON-encoded input object
+          example: '{"id":"550e8400-e29b-41d4-a716-446655440000"}'
+      responses:
+        '200':
+          description: Vehicle case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCaseDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /trpc/vehicleCase.search:
+    get:
+      tags: [Vehicle Cases]
+      summary: Search vehicle cases
+      operationId: searchVehicleCases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: input
+          in: query
+          required: true
+          schema:
+            type: string
+            description: JSON-encoded search parameters
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCaseSearchResult'
+
+  /trpc/vehicleCase.changeStatus:
+    post:
+      tags: [Vehicle Cases]
+      summary: Change case status
+      operationId: changeVehicleCaseStatus
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, newStatus]
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                newStatus:
+                  $ref: '#/components/schemas/VehicleCaseStatus'
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Status changed
+        '400':
+          description: Invalid status transition
+
+  /trpc/vehicleCase.release:
+    post:
+      tags: [Vehicle Cases]
+      summary: Release vehicle
+      operationId: releaseVehicle
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseVehicleInput'
+      responses:
+        '200':
+          description: Vehicle released
+        '400':
+          description: Cannot release (hold active or balance due)
+
+  /trpc/feeLedger.addFee:
+    post:
+      tags: [Fee Ledger]
+      summary: Add fee to case
+      operationId: addFee
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFeeInput'
+      responses:
+        '200':
+          description: Fee added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeLedgerEntry'
+
+  /trpc/feeLedger.recordPayment:
+    post:
+      tags: [Fee Ledger]
+      summary: Record payment
+      operationId: recordPayment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordPaymentInput'
+      responses:
+        '200':
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeLedgerEntry'
+
+  /trpc/feeLedger.getForCase:
+    get:
+      tags: [Fee Ledger]
+      summary: Get fee ledger for case
+      operationId: getFeeLedgerForCase
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: input
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fee ledger with summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeLedgerResponse'
+
+  /trpc/compliance.createNotice:
+    post:
+      tags: [Compliance]
+      summary: Create compliance notice
+      operationId: createComplianceNotice
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoticeInput'
+      responses:
+        '200':
+          description: Notice created
+
+  /trpc/compliance.getComplianceStatus:
+    get:
+      tags: [Compliance]
+      summary: Get compliance status for case
+      operationId: getComplianceStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: input
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Compliance status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceStatus'
+
+  /trpc/document.getUploadUrl:
+    post:
+      tags: [Documents]
+      summary: Get pre-signed upload URL
+      operationId: getDocumentUploadUrl
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicleCaseId, documentType, fileName, mimeType, fileSize]
+              properties:
+                vehicleCaseId:
+                  type: string
+                  format: uuid
+                documentType:
+                  $ref: '#/components/schemas/DocumentType'
+                fileName:
+                  type: string
+                mimeType:
+                  type: string
+                fileSize:
+                  type: integer
+                  maximum: 52428800
+      responses:
+        '200':
+          description: Upload URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploadUrl:
+                    type: string
+                    format: uri
+                  key:
+                    type: string
+                  expiresIn:
+                    type: integer
+
+  /health:
+    get:
+      tags: [Admin]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /health/ready:
+    get:
+      tags: [Admin]
+      summary: Readiness check
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready, degraded]
+                  checks:
+                    type: object
+                    additionalProperties:
+                      type: boolean
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            name:
+              type: string
+            role:
+              type: string
+            permissions:
+              type: array
+              items:
+                type: string
+
+    VehicleCaseStatus:
+      type: string
+      enum:
+        - PENDING_INTAKE
+        - INTAKE_COMPLETE
+        - STORED
+        - HOLD
+        - RELEASE_ELIGIBLE
+        - RELEASED
+        - AUCTION_ELIGIBLE
+        - AUCTION_LISTED
+        - SOLD
+        - DISPOSED
+
+    TowReason:
+      type: string
+      enum:
+        - ABANDONED
+        - ACCIDENT
+        - ARREST
+        - ILLEGALLY_PARKED
+        - EVIDENCE
+        - PRIVATE_PROPERTY
+        - REPOSSESSION
+        - OTHER
+
+    VehicleType:
+      type: string
+      enum: [SEDAN, SUV, TRUCK, VAN, MOTORCYCLE, TRAILER, RV, COMMERCIAL, OTHER]
+
+    VehicleClass:
+      type: string
+      enum: [STANDARD, LARGE, MOTORCYCLE, OVERSIZED, TRAILER]
+
+    FeeType:
+      type: string
+      enum:
+        - TOW
+        - ADMIN
+        - STORAGE_DAILY
+        - GATE
+        - LIEN_PROCESSING
+        - TITLE_SEARCH
+        - NOTICE
+        - DOLLY
+        - WINCH
+        - MILEAGE
+        - STORAGE_OVERRIDE
+        - ADJUSTMENT
+        - PAYMENT
+
+    PaymentMethod:
+      type: string
+      enum:
+        - CASH
+        - CHECK
+        - CREDIT_CARD
+        - DEBIT_CARD
+        - MONEY_ORDER
+        - CERTIFIED_CHECK
+        - ACH
+        - AGENCY_VOUCHER
+
+    DocumentType:
+      type: string
+      enum:
+        - INTAKE_PHOTO
+        - DAMAGE_PHOTO
+        - VIN_PHOTO
+        - PLATE_PHOTO
+        - ODOMETER_PHOTO
+        - RELEASE_PHOTO
+        - TOW_RECEIPT
+        - POLICE_REPORT
+        - TITLE_DOCUMENT
+        - REGISTRATION
+        - INSURANCE
+        - RELEASE_AUTHORIZATION
+        - HEARING_DOCUMENT
+        - NOTICE_COPY
+        - CERTIFIED_MAIL_RECEIPT
+        - OTHER
+
+    CreateVehicleCaseInput:
+      type: object
+      required: [vehicleType, vehicleClass, towDate, towReason, towLocation]
+      properties:
+        vin:
+          type: string
+          minLength: 17
+          maxLength: 17
+          pattern: '^[A-HJ-NPR-Z0-9]{17}$'
+        plateNumber:
+          type: string
+          maxLength: 10
+        plateState:
+          type: string
+          minLength: 2
+          maxLength: 2
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        make:
+          type: string
+          maxLength: 50
+        model:
+          type: string
+          maxLength: 50
+        color:
+          type: string
+          maxLength: 30
+        vehicleType:
+          $ref: '#/components/schemas/VehicleType'
+        vehicleClass:
+          $ref: '#/components/schemas/VehicleClass'
+        towDate:
+          type: string
+          format: date-time
+        towReason:
+          $ref: '#/components/schemas/TowReason'
+        towLocation:
+          type: string
+          maxLength: 500
+        towingAgencyId:
+          type: string
+          format: uuid
+        yardLocation:
+          type: string
+          maxLength: 50
+        ownerName:
+          type: string
+          maxLength: 200
+        ownerAddress:
+          type: string
+          maxLength: 500
+        ownerPhone:
+          type: string
+          maxLength: 20
+        policeHold:
+          type: boolean
+          default: false
+        holdExpiresAt:
+          type: string
+          format: date-time
+        policeCaseNumber:
+          type: string
+          maxLength: 50
+
+    VehicleCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseNumber:
+          type: string
+          pattern: '^\d{2}-\d{5}$'
+        status:
+          $ref: '#/components/schemas/VehicleCaseStatus'
+        vin:
+          type: string
+        plateNumber:
+          type: string
+        plateState:
+          type: string
+        year:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        color:
+          type: string
+        vehicleType:
+          $ref: '#/components/schemas/VehicleType'
+        vehicleClass:
+          $ref: '#/components/schemas/VehicleClass'
+        towDate:
+          type: string
+          format: date-time
+        intakeDate:
+          type: string
+          format: date-time
+        towReason:
+          $ref: '#/components/schemas/TowReason'
+        towLocation:
+          type: string
+        yardLocation:
+          type: string
+        policeHold:
+          type: boolean
+        holdExpiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    VehicleCaseDetail:
+      allOf:
+        - $ref: '#/components/schemas/VehicleCase'
+        - type: object
+          properties:
+            feeLedgerEntries:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeeLedgerEntry'
+            complianceNotices:
+              type: array
+              items:
+                $ref: '#/components/schemas/ComplianceNotice'
+            documents:
+              type: array
+              items:
+                $ref: '#/components/schemas/CaseDocument'
+            towingAgency:
+              $ref: '#/components/schemas/Agency'
+
+    VehicleCaseSearchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleCase'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+
+    ReleaseVehicleInput:
+      type: object
+      required: [id, releasedTo, releaseType, identificationVerified]
+      properties:
+        id:
+          type: string
+          format: uuid
+        releasedTo:
+          type: string
+        releaseType:
+          type: string
+          enum: [OWNER, LIENHOLDER, AGENT, INSURANCE, AGENCY]
+        identificationVerified:
+          type: boolean
+        paymentReceiptId:
+          type: string
+        notes:
+          type: string
+
+    AddFeeInput:
+      type: object
+      required: [vehicleCaseId, feeType, description, amount]
+      properties:
+        vehicleCaseId:
+          type: string
+          format: uuid
+        feeType:
+          $ref: '#/components/schemas/FeeType'
+        description:
+          type: string
+          maxLength: 500
+        amount:
+          type: number
+          minimum: 0.01
+        accrualDate:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date-time
+
+    RecordPaymentInput:
+      type: object
+      required: [vehicleCaseId, amount, paymentMethod]
+      properties:
+        vehicleCaseId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          minimum: 0.01
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        checkNumber:
+          type: string
+        cardLast4:
+          type: string
+          pattern: '^\d{4}$'
+        notes:
+          type: string
+
+    FeeLedgerEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleCaseId:
+          type: string
+          format: uuid
+        feeType:
+          $ref: '#/components/schemas/FeeType'
+        description:
+          type: string
+        amount:
+          type: number
+        accrualDate:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        receiptNumber:
+          type: string
+        voidedAt:
+          type: string
+          format: date-time
+        voidReason:
+          type: string
+
+    FeeLedgerResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeLedgerEntry'
+        summary:
+          type: object
+          properties:
+            totalCharges:
+              type: number
+            totalPayments:
+              type: number
+            balance:
+              type: number
+            fullyPaid:
+              type: boolean
+
+    CreateNoticeInput:
+      type: object
+      required: [vehicleCaseId, noticeType, recipientType, sendMethod]
+      properties:
+        vehicleCaseId:
+          type: string
+          format: uuid
+        noticeType:
+          type: string
+        recipientType:
+          type: string
+        recipientName:
+          type: string
+        recipientAddress:
+          type: string
+        sendMethod:
+          type: string
+        scheduledSendDate:
+          type: string
+          format: date-time
+
+    ComplianceNotice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        noticeType:
+          type: string
+        recipientType:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+        deliveryStatus:
+          type: string
+        responseDueAt:
+          type: string
+          format: date-time
+        responseReceived:
+          type: boolean
+        hearingRequested:
+          type: boolean
+        hearingDate:
+          type: string
+          format: date-time
+        hearingResult:
+          type: string
+
+    ComplianceStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [COMPLIANT, NON_COMPLIANT, PENDING]
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              requirement:
+                type: string
+              met:
+                type: boolean
+              detail:
+                type: string
+              mclReference:
+                type: string
+        nextActions:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+              dueDate:
+                type: string
+                format: date-time
+
+    CaseDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        documentType:
+          $ref: '#/components/schemas/DocumentType'
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    Agency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        orisCode:
+          type: string
+        agencyType:
+          type: string
+        contactEmail:
+          type: string
+
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'

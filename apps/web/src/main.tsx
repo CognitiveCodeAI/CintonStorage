@@ -24,7 +24,7 @@ const getAuthToken = () => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: '/trpc',
+      url: '/api/trpc',
       headers() {
         const token = getAuthToken();
         return token ? { authorization: `Bearer ${token}` } : {};
