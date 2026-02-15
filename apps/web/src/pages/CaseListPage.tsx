@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { formatCurrency, formatDate } from '../lib/utils';
 import StatusBadge from '../components/StatusBadge';
@@ -15,9 +15,6 @@ import {
   ChevronDown,
   ChevronsUpDown,
   Car,
-  Eye,
-  DollarSign,
-  Clock,
   AlertTriangle,
 } from 'lucide-react';
 import { VehicleCaseStatus } from '../types';
@@ -142,10 +139,10 @@ export default function CaseListPage() {
 
   // Balance color helper
   const getBalanceColor = (balance: number, status: string) => {
-    if (balance === 0) return 'text-green-600 dark:text-green-400';
-    if (status === 'RELEASED') return 'text-gray-600 dark:text-gray-400';
-    if (balance > 500) return 'text-red-600 dark:text-red-400 font-semibold';
-    return 'text-gray-900 dark:text-gray-100';
+    if (balance === 0) return 'text-success';
+    if (status === 'RELEASED') return 'text-muted-foreground';
+    if (balance > 500) return 'text-danger font-semibold';
+    return 'text-foreground';
   };
 
   return (
@@ -153,11 +150,11 @@ export default function CaseListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="ops-page-title">
             Vehicle Cases
           </h1>
           {data && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="ops-page-subtitle mt-0.5">
               {data.total} total cases
             </p>
           )}
@@ -171,11 +168,11 @@ export default function CaseListPage() {
       <Card padding="sm">
         <form onSubmit={handleSearch} className="flex gap-2 sm:gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by VIN, plate, case #, or owner..."
-              className="input pl-10 pr-10 dark:bg-gray-900 dark:border-gray-700"
+              className="input pl-10 pr-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search cases"
@@ -189,7 +186,7 @@ export default function CaseListPage() {
                   params.delete('query');
                   setSearchParams(params);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label="Clear search"
               >
                 &times;
@@ -206,11 +203,11 @@ export default function CaseListPage() {
               key={filter.label}
               onClick={() => handleStatusFilter(filter.value)}
               className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                'px-2.5 py-1 rounded-md border text-xs font-semibold tracking-wide transition-colors',
                 statusParam === filter.value ||
                   (!statusParam && filter.value === undefined)
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground'
               )}
             >
               {filter.label}
@@ -238,12 +235,12 @@ export default function CaseListPage() {
       ) : (
         <Card padding="none" className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-surface-muted">
                 <tr>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
                     onClick={() => handleSort('caseNumber')}
                   >
                     <div className="flex items-center gap-1">
@@ -253,7 +250,7 @@ export default function CaseListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
                     onClick={() => handleSort('vehicle')}
                   >
                     <div className="flex items-center gap-1">
@@ -263,19 +260,19 @@ export default function CaseListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
                   >
                     Plate
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
                   >
                     Status
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
                     onClick={() => handleSort('daysStored')}
                   >
                     <div className="flex items-center gap-1">
@@ -285,7 +282,7 @@ export default function CaseListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
                     onClick={() => handleSort('towDate')}
                   >
                     <div className="flex items-center gap-1">
@@ -295,7 +292,7 @@ export default function CaseListPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                    className="px-3 py-2 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
                     onClick={() => handleSort('balance')}
                   >
                     <div className="flex items-center gap-1 justify-end">
@@ -303,82 +300,90 @@ export default function CaseListPage() {
                       {renderSortIcon('balance')}
                     </div>
                   </th>
-                  <th scope="col" className="relative px-4 py-3 w-10">
+                  <th scope="col" className="relative w-9 px-3 py-2">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-surface divide-y divide-border">
                 {sortedCases.map((vehicleCase) => (
                   <tr
                     key={vehicleCase.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors group"
+                    className="group cursor-pointer border-l-2 border-l-transparent transition-colors hover:border-l-ring hover:bg-surface-muted focus-visible:border-l-ring focus-visible:bg-accent focus-visible:outline-none"
                     onClick={() => handleRowClick(vehicleCase.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRowClick(vehicleCase.id);
+                      }
+                    }}
+                    tabIndex={0}
+                    aria-label={`Open case ${vehicleCase.caseNumber}`}
                   >
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <span className="font-mono text-sm font-semibold text-foreground">
                           {vehicleCase.caseNumber}
                         </span>
                         {vehicleCase.policeHold && (
-                          <AlertTriangle className="h-3.5 w-3.5 text-red-500" title="Police Hold" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-danger" aria-label="Police hold" />
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-2.5">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <div className="text-sm font-medium text-foreground">
                           {vehicleCase.year} {vehicleCase.make} {vehicleCase.model}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted-foreground">
                           {vehicleCase.color}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
                       {vehicleCase.plateNumber ? (
                         <span className="font-mono">
                           {vehicleCase.plateNumber}
-                          <span className="text-gray-400 dark:text-gray-500 ml-1">
+                          <span className="ml-1 text-muted-foreground/80">
                             ({vehicleCase.plateState})
                           </span>
                         </span>
                       ) : (
-                        <span className="text-gray-400 dark:text-gray-500">-</span>
+                        <span className="text-muted-foreground/80">-</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-2.5">
                       <StatusBadge status={vehicleCase.status} size="sm" />
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-2.5">
                       <span
                         className={cn(
                           'text-sm font-medium',
                           vehicleCase.daysStored >= 30
-                            ? 'text-red-600 dark:text-red-400'
+                            ? 'text-danger'
                             : vehicleCase.daysStored >= 14
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-gray-900 dark:text-gray-100'
+                            ? 'text-warning'
+                            : 'text-foreground'
                         )}
                       >
                         {vehicleCase.daysStored}d
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
                       {formatDate(vehicleCase.towDate)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                    <td className="whitespace-nowrap px-3 py-2.5 text-right">
                       <span
                         className={cn(
-                          'font-mono text-sm',
+                          'font-mono text-sm [font-variant-numeric:tabular-nums]',
                           getBalanceColor(vehicleCase.balance, vehicleCase.status)
                         )}
                       >
                         {formatCurrency(vehicleCase.balance)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
-                      <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+                    <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </td>
                   </tr>
                 ))}
@@ -388,8 +393,8 @@ export default function CaseListPage() {
 
           {/* Pagination / Count */}
           {data && data.total > sortedCases.length && (
-            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="border-t border-border bg-surface-muted px-3 py-2">
+              <p className="text-xs text-muted-foreground">
                 Showing {sortedCases.length} of {data.total} cases
               </p>
             </div>
@@ -398,7 +403,7 @@ export default function CaseListPage() {
       )}
 
       {/* Keyboard hint */}
-      <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+      <p className="text-xs text-muted-foreground text-center">
         Press <Kbd>/</Kbd> to search
       </p>
     </div>

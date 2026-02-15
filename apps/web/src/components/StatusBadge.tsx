@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import { VehicleCaseStatus } from '../types';
 import {
   AlertTriangle,
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react';
 import { statusStyles } from '../styles/tokens';
 
-const statusIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const statusIcons: Record<string, ComponentType<{ className?: string }>> = {
   PENDING_INTAKE: Clock3,
   INTAKE_COMPLETE: Package,
   STORED: Package,

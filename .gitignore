@@ -27,6 +27,10 @@ pnpm-debug.log*
 
 # Testing
 coverage/
+playwright-report/
+test-results/
+apps/web/playwright-report/
+apps/web/test-results/
 
 # Prisma
 packages/db/prisma/migrations/
