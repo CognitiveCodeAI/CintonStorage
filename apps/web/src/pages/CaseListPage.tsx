@@ -4,11 +4,11 @@ import { trpc } from '../lib/trpc';
 import { formatCurrency, formatDate, cn } from '../lib/utils';
 import StatusBadge from '../components/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { SkeletonTable } from '../components/ui/Skeleton';
-import { EmptyState } from '../components/ui/EmptyState';
-import { Kbd } from '../components/ui/Kbd';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { SkeletonTable } from '../components/ui/skeleton';
+import { EmptyState } from '../components/ui/empty-state';
+import { Kbd } from '../components/ui/kbd';
 import { Toggle } from '@/components/ui/toggle';
 import {
   Table,

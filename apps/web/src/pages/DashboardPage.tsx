@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { formatCurrency } from '../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Car,

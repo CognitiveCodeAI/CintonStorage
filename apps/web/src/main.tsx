@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from './lib/trpc';
 import { AuthProvider } from './contexts/AuthContext';
-import { ToastProvider } from './components/ui/Toast';
+import { ToastProvider } from './components/ui/toast';
 import App from './App';
 import './index.css';
 

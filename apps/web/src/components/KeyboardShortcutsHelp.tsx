@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Kbd } from './ui/Kbd';
+import { Kbd } from './ui/kbd';
 import { shortcuts } from '../hooks/useKeyboardShortcuts';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 

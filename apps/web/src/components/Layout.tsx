@@ -5,8 +5,8 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
-import { Button, buttonVariants } from './ui/Button';
-import { Kbd } from './ui/Kbd';
+import { Button, buttonVariants } from './ui/button';
+import { Kbd } from './ui/kbd';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ import {
   Keyboard,
   ChevronDown,
   Building2,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -134,6 +135,12 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/admin">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Admin</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>

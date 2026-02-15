@@ -6,6 +6,15 @@ import DashboardPage from './pages/DashboardPage';
 import CaseListPage from './pages/CaseListPage';
 import CaseDetailPage from './pages/CaseDetailPage';
 import NewIntakePage from './pages/NewIntakePage';
+import {
+  AdminDashboardPage,
+  UserListPage,
+  RoleListPage,
+  AgencyListPage,
+  FeeSchedulePage,
+  YardLocationsPage,
+  SettingsPage,
+} from './pages/admin';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -58,6 +67,63 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NewIntakePage />
+          </ProtectedRoute>
+        }
+      />
+      {/* Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <UserListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/roles"
+        element={
+          <ProtectedRoute>
+            <RoleListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/agencies"
+        element={
+          <ProtectedRoute>
+            <AgencyListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/fees"
+        element={
+          <ProtectedRoute>
+            <FeeSchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/yard"
+        element={
+          <ProtectedRoute>
+            <YardLocationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

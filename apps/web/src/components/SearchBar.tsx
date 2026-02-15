@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car, ArrowRight } from 'lucide-react';
 import { trpc } from '../lib/trpc';
-import { Kbd } from './ui/Kbd';
+import { Kbd } from './ui/kbd';
 import StatusBadge from './StatusBadge';
 import {
   CommandDialog,

@@ -4,14 +4,14 @@ import { trpc } from '../lib/trpc';
 import { decodeVIN, isValidVINFormat, mapVehicleType } from '../lib/vinDecoder';
 import { PhotoUpload, Photo } from '../components/PhotoUpload';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Input } from '../components/ui/Input';
+import { Input } from '../components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../components/ui/toast';
 import { TowReason, VehicleType, VehicleClass } from '../types';
 import {
   ArrowLeft,
