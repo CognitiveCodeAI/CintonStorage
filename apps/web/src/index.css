@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Print styles */
+@import './styles/print.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -31,6 +34,29 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;
   }
+
+  /* Improved focus-visible styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Remove focus ring for non-keyboard interactions */
+  :focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Ensure minimum touch targets on mobile */
+  @media (pointer: coarse) {
+    button,
+    [role="button"],
+    a,
+    input,
+    select,
+    textarea {
+      min-height: 44px;
+    }
+  }
 }
 
 @layer components {
@@ -59,7 +85,7 @@
     @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
   }
   .card {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+    @apply rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;

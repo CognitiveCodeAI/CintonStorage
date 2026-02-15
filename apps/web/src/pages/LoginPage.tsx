@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Alert } from '../components/ui/Alert';
 import { Car } from 'lucide-react';
+
+// Show demo credentials only in development/demo mode
+const SHOW_DEMO_CREDENTIALS = import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,111 +26,162 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError('Invalid email or password');
+      setError('Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center">
-            <div className="bg-primary p-3 rounded-full">
-              <Car className="h-8 w-8 text-white" />
+    <div className="min-h-screen flex">
+      {/* Left panel - branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary to-blue-900 text-white p-12 flex-col justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-3 rounded-xl">
+              <Car className="h-8 w-8" />
             </div>
+            <span className="text-2xl font-bold">Cinton Storage</span>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Cinton Storage
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Impound Lot Management System
-          </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email" className="label">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold leading-tight">
+            Impound Lot Management
+            <br />
+            Made Simple
+          </h1>
+          <p className="text-lg text-white/80 max-w-md">
+            Track vehicles, manage fees, and streamline releases with our comprehensive lot management system.
+          </p>
+          <div className="grid grid-cols-3 gap-4 pt-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold">500+</div>
+              <div className="text-sm text-white/70">Vehicles Managed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">24/7</div>
+              <div className="text-sm text-white/70">System Uptime</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">5min</div>
+              <div className="text-sm text-white/70">Avg. Intake Time</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-sm text-white/60">
+          &copy; {new Date().getFullYear()} Cinton Storage. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right panel - login form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
+        <div className="w-full max-w-md">
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-flex items-center gap-3">
+              <div className="bg-primary p-3 rounded-xl">
+                <Car className="h-8 w-8 text-white" />
+              </div>
+              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cinton Storage</span>
+            </div>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Impound Lot Management System
+            </p>
+          </div>
+
+          {/* Login card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Welcome back
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Sign in to your account to continue
+              </p>
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <Input
+                label="Email address"
                 type="email"
                 autoComplete="email"
                 required
-                className="input mt-1"
-                placeholder="admin@cinton.com"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="label">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="input mt-1"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full py-3"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+              <div>
+                <Input
+                  label="Password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <div className="mt-1 text-right">
+                  <a
+                    href="#"
+                    className="text-sm text-primary hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Placeholder for forgot password flow
+                    }}
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                'Sign in'
-              )}
-            </button>
-          </div>
-        </form>
+                    Forgot password?
+                  </a>
+                </div>
+              </div>
 
-        <div className="text-center text-sm text-gray-500">
-          <p>Demo credentials:</p>
-          <p className="font-mono">admin@cinton.com / admin123</p>
+              {error && (
+                <Alert variant="error" onDismiss={() => setError('')}>
+                  {error}
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                loading={isLoading}
+                className="w-full bg-gray-900 text-white hover:bg-gray-800"
+                size="lg"
+              >
+                Sign in
+              </Button>
+            </form>
+
+            {/* Demo credentials (only in dev/demo mode) */}
+            {SHOW_DEMO_CREDENTIALS && (
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">
+                  Demo credentials:
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+                  <code className="text-sm text-gray-700 dark:text-gray-300">
+                    admin@cinton.com / admin123
+                  </code>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('admin@cinton.com');
+                    setPassword('admin123');
+                  }}
+                  className="w-full mt-2 text-xs text-primary hover:underline"
+                >
+                  Auto-fill demo credentials
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+            By signing in, you agree to our Terms of Service and Privacy Policy.
+          </p>
         </div>
       </div>
     </div>

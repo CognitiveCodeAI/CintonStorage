@@ -285,6 +285,75 @@ const vehicleCaseRouter = router({
 
       return updated;
     }),
+
+  recordPayment: protectedProcedure
+    .input(z.object({
+      caseId: z.string().uuid(),
+      amount: z.number().positive(),
+      paymentMethod: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const vehicleCase = await ctx.prisma.vehicleCase.findUnique({ where: { id: input.caseId } });
+      if (!vehicleCase) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (vehicleCase.status === 'RELEASED') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot record payment for released vehicle' });
+      }
+
+      // Create payment entry (negative amount for payment)
+      await ctx.prisma.feeLedgerEntry.create({
+        data: {
+          vehicleCaseId: input.caseId,
+          feeType: 'PAYMENT',
+          description: `Payment (${input.paymentMethod})`,
+          amount: -input.amount,
+          accrualDate: new Date(),
+          paidAt: new Date(),
+          createdById: ctx.user.id,
+        },
+      });
+
+      // Check if balance is now zero and update status
+      const entries = await ctx.prisma.feeLedgerEntry.findMany({
+        where: { vehicleCaseId: input.caseId, voidedAt: null },
+      });
+      const totalCharges = entries.filter((f: { amount: unknown }) => Number(f.amount) > 0)
+        .reduce((sum: number, f: { amount: unknown }) => sum + Number(f.amount), 0);
+      const totalPayments = entries.filter((f: { amount: unknown }) => Number(f.amount) < 0)
+        .reduce((sum: number, f: { amount: unknown }) => sum + Math.abs(Number(f.amount)), 0);
+      const balance = totalCharges - totalPayments;
+
+      if (balance <= 0 && vehicleCase.status === 'STORED' && !vehicleCase.policeHold) {
+        await ctx.prisma.vehicleCase.update({
+          where: { id: input.caseId },
+          data: { status: 'RELEASE_ELIGIBLE', updatedById: ctx.user.id },
+        });
+      }
+
+      return { success: true, newBalance: balance };
+    }),
+
+  release: protectedProcedure
+    .input(z.object({
+      caseId: z.string().uuid(),
+      releasedTo: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const vehicleCase = await ctx.prisma.vehicleCase.findUnique({ where: { id: input.caseId } });
+      if (!vehicleCase) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (vehicleCase.policeHold) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot release vehicle with police hold' });
+      }
+
+      return ctx.prisma.vehicleCase.update({
+        where: { id: input.caseId },
+        data: {
+          status: 'RELEASED',
+          releasedAt: new Date(),
+          releasedTo: input.releasedTo,
+          updatedById: ctx.user.id,
+        },
+      });
+    }),
 });
 
 // Agency Router

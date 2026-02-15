@@ -18,6 +18,14 @@
     {
       "source": "/api/health",
       "destination": "/api"
+    },
+    {
+      "source": "/api/upload",
+      "destination": "/api/upload"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     }
   ]
 }
