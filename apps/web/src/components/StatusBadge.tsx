@@ -1,4 +1,4 @@
-import { VehicleCaseStatus } from '@cinton/shared';
+import { VehicleCaseStatus } from '../types';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   PENDING_INTAKE: { label: 'Pending', className: 'bg-amber-100 text-amber-800' },

@@ -4,7 +4,7 @@ import { trpc } from '../lib/trpc';
 import { formatCurrency, formatDate } from '../lib/utils';
 import StatusBadge from '../components/StatusBadge';
 import { Search, ChevronRight } from 'lucide-react';
-import { VehicleCaseStatus } from '@cinton/shared';
+import { VehicleCaseStatus } from '../types';
 
 const statusFilters = [
   { label: 'All', value: undefined },

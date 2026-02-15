@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
-import { TowReason, VehicleType, VehicleClass } from '@cinton/shared';
+import { TowReason, VehicleType, VehicleClass } from '../types';
 import { ArrowLeft, ArrowRight, Check, AlertTriangle } from 'lucide-react';
 
 type IntakeStep = 1 | 2 | 3 | 4;
