@@ -1,6 +1,7 @@
 {
   "name": "cinton-api",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "@trpc/server": "^10.45.0",
