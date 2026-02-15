@@ -1,7 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo run build --filter=@cinton/web",
+  "buildCommand": "cd api && npx prisma generate && cd .. && pnpm turbo run build --filter=@cinton/web",
+  "installCommand": "pnpm install && cd api && pnpm install",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
-  "installCommand": "pnpm install"
+  "functions": {
+    "api/index.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/trpc/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api"
+    }
+  ]
 }

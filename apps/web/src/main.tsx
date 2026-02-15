@@ -21,12 +21,10 @@ const getAuthToken = () => {
   return localStorage.getItem('token');
 };
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: `${API_URL}/trpc`,
+      url: '/api/trpc',
       headers() {
         const token = getAuthToken();
         return token ? { authorization: `Bearer ${token}` } : {};
