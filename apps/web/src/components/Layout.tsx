@@ -16,6 +16,7 @@ import {
   Search,
   Keyboard,
   ChevronDown,
+  Building2,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -27,6 +28,13 @@ const navItems = [
   { href: '/cases', label: 'Cases', icon: Car, shortcut: 'G C' },
   { href: '/intake/new', label: 'New Intake', icon: ClipboardList, shortcut: 'N' },
 ];
+
+const isActiveRoute = (pathname: string, href: string) => {
+  if (href === '/') return pathname === '/';
+  if (href === '/cases') return pathname.startsWith('/cases');
+  if (href === '/intake/new') return pathname.startsWith('/intake');
+  return pathname === href;
+};
 
 export default function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
@@ -43,39 +51,36 @@ export default function Layout({ children }: LayoutProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Skip to content link for accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-primary focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface focus:text-primary focus:rounded-md focus:border focus:border-border focus:outline-none focus:ring-2 focus:ring-ring"
       >
         Skip to main content
       </a>
 
-      {/* Header */}
-      <header className="bg-primary text-white shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link to="/" className="text-lg font-bold tracking-tight">
-                Cinton Storage
-              </Link>
-            </div>
+      <header className="sticky top-0 z-40 border-b border-border bg-surface">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-5 lg:px-6">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Building2 className="h-4 w-4 text-primary" />
+              <span className="hidden sm:inline">Cinton Storage</span>
+              <span className="sm:hidden">Cinton</span>
+            </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.href;
+                const isActive = isActiveRoute(location.pathname, item.href);
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-white/20'
-                        : 'hover:bg-white/10'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-foreground hover:bg-surface-muted'
                     }`}
                     title={`${item.label} (${item.shortcut})`}
                   >
@@ -85,120 +90,108 @@ export default function Layout({ children }: LayoutProps) {
                 );
               })}
             </nav>
+          </div>
 
-            {/* Right side actions */}
-            <div className="flex items-center space-x-2">
-              {/* Search button */}
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Search"
-              >
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden min-w-[320px] md:inline-flex h-9 items-center justify-between rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-surface-muted"
+              aria-label="Search by VIN, plate, or case number"
+            >
+              <span className="inline-flex items-center gap-2">
                 <Search className="h-4 w-4" />
-                <span className="text-white/70">Search...</span>
-                <Kbd className="bg-white/10 border-white/20 text-white/70">/</Kbd>
-              </button>
+                Search VIN, plate, case #
+              </span>
+              <Kbd>/</Kbd>
+            </button>
 
-              {/* Mobile search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground md:hidden"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+
+            <ThemeToggle />
+
+            <button
+              onClick={() => setHelpOpen(true)}
+              className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground transition-colors"
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+            >
+              <Keyboard className="h-4 w-4" />
+            </button>
+
+            <div className="hidden md:block relative">
               <button
-                onClick={() => setSearchOpen(true)}
-                className="sm:hidden p-2 hover:bg-white/10 rounded-md"
-                aria-label="Search"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-surface px-3 text-sm text-foreground hover:bg-surface-muted transition-colors"
               >
-                <Search className="h-5 w-5" />
+                <span className="max-w-28 truncate">{user?.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
 
-              {/* Theme toggle */}
-              <ThemeToggle />
-
-              {/* Keyboard shortcuts help */}
-              <button
-                onClick={() => setHelpOpen(true)}
-                className="hidden sm:flex p-2 hover:bg-white/10 rounded-md"
-                aria-label="Keyboard shortcuts"
-                title="Keyboard shortcuts (?)"
-              >
-                <Keyboard className="h-5 w-5" />
-              </button>
-
-              {/* User menu (desktop) */}
-              <div className="hidden md:block relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors"
-                >
-                  <span className="text-sm">{user?.name}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-
-                {userMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0"
-                      onClick={() => setUserMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
-                      <div className="py-1">
-                        <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                          {user?.email}
-                        </div>
-                        <button
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            logout();
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Logout
-                        </button>
-                      </div>
+              {userMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setUserMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-border bg-surface shadow-none">
+                    <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
+                      {user?.email}
                     </div>
-                  </>
-                )}
-              </div>
-
-              {/* Mobile menu button */}
-              <button
-                className="md:hidden p-2 hover:bg-white/10 rounded-md"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground transition-colors hover:bg-surface-muted"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
+
+            <button
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-white/20">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="border-t border-border bg-surface md:hidden">
+            <div className="space-y-1 px-3 py-3">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.href;
+                const isActive = isActiveRoute(location.pathname, item.href);
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium ${
+                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
                       isActive
-                        ? 'bg-white/20'
-                        : 'hover:bg-white/10'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-foreground hover:bg-surface-muted'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>
                 );
               })}
-              <div className="border-t border-white/20 pt-2 mt-2">
-                <div className="px-3 py-2 text-sm text-white/70">
+              <div className="mt-2 border-t border-border pt-2">
+                <div className="px-3 py-2 text-xs text-muted-foreground">
                   {user?.name} ({user?.email})
                 </div>
                 <button
@@ -206,9 +199,9 @@ export default function Layout({ children }: LayoutProps) {
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium hover:bg-white/10 w-full text-left"
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </button>
               </div>
@@ -220,7 +213,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <main
         id="main-content"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+        className="mx-auto max-w-[1440px] px-4 py-5 sm:px-5 lg:px-6"
         role="main"
         tabIndex={-1}
       >

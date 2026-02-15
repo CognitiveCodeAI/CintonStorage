@@ -76,7 +76,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
+        className="fixed inset-0 bg-black/35 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -84,17 +84,17 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
       {/* Search modal */}
       <div className="flex min-h-full items-start justify-center p-4 pt-16 sm:pt-24">
         <div
-          className="relative w-full max-w-xl transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-2xl transition-all"
+          className="relative w-full max-w-2xl transform overflow-hidden rounded-lg border border-border bg-surface shadow-none transition-all"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search input */}
-          <div className="flex items-center border-b border-gray-200 dark:border-gray-700 px-4">
-            <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <div className="flex items-center border-b border-border px-4">
+            <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <input
               ref={inputRef}
               type="text"
-              className="h-14 w-full border-0 bg-transparent px-4 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-0"
-              placeholder="Search by VIN, plate, case #, or owner..."
+              className="h-12 w-full border-0 bg-transparent px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+              placeholder="Search VIN, plate, case #, or owner..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -104,10 +104,10 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                className="rounded p-1 hover:bg-surface-muted"
                 aria-label="Clear search"
               >
-                <X className="h-4 w-4 text-gray-400" />
+                <X className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
             <Kbd className="ml-2">Esc</Kbd>
@@ -116,7 +116,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
           {/* Results */}
           <div className="max-h-80 overflow-y-auto">
             {query.length < 2 && (
-              <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 <p>Type at least 2 characters to search</p>
                 <div className="mt-4 flex justify-center gap-4">
                   <button
@@ -124,7 +124,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
                       navigate('/cases');
                       onClose();
                     }}
-                    className="flex items-center gap-2 text-primary hover:underline"
+                    className="flex items-center gap-2 font-medium text-primary hover:underline"
                   >
                     <Car className="h-4 w-4" />
                     View all cases
@@ -136,12 +136,12 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
 
             {query.length >= 2 && isLoading && (
               <div className="px-4 py-8 text-center">
-                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-input border-t-primary" />
               </div>
             )}
 
             {query.length >= 2 && !isLoading && results.length === 0 && (
-              <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 No vehicles found for "{query}"
               </div>
             )}
@@ -154,32 +154,32 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
                     role="option"
                     aria-selected={index === selectedIndex}
                     className={cn(
-                      'flex items-center gap-4 px-4 py-3 cursor-pointer transition-colors',
+                      'flex cursor-pointer items-center gap-3 border-l-2 px-4 py-2.5 transition-colors',
                       index === selectedIndex
-                        ? 'bg-primary/10 dark:bg-primary/20'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        ? 'border-l-primary bg-accent'
+                        : 'border-l-transparent hover:bg-surface-muted'
                     )}
                     onClick={() => handleResultClick(vehicleCase.id)}
                     onMouseEnter={() => setSelectedIndex(index)}
                   >
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                        <Car className="h-5 w-5 text-gray-400" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-surface-muted">
+                        <Car className="h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <span className="font-mono text-sm font-medium text-foreground">
                           {vehicleCase.caseNumber}
                         </span>
                         <StatusBadge status={vehicleCase.status} size="sm" />
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      <p className="truncate text-sm text-muted-foreground">
                         {vehicleCase.year} {vehicleCase.make} {vehicleCase.model}
                         {vehicleCase.plateNumber && ` • ${vehicleCase.plateNumber}`}
                       </p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                   </li>
                 ))}
               </ul>
@@ -187,7 +187,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <Kbd>↑</Kbd>

@@ -14,7 +14,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     return (
       <button
         className={cn(
-          'p-2 rounded-md hover:bg-white/10 transition-colors',
+          'h-9 w-9 rounded-md border border-input bg-surface text-muted-foreground transition-colors',
           className
         )}
         aria-label="Toggle theme"
@@ -29,7 +29,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     <button
       onClick={toggleTheme}
       className={cn(
-        'p-2 rounded-md hover:bg-white/10 transition-colors',
+        'h-9 w-9 rounded-md border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground transition-colors',
         className
       )}
       aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}

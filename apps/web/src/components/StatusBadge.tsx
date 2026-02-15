@@ -1,16 +1,25 @@
 import { VehicleCaseStatus } from '../types';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  Gavel,
+  Package,
+  XCircle,
+} from 'lucide-react';
+import { statusStyles } from '../styles/tokens';
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  PENDING_INTAKE: { label: 'Pending', className: 'bg-amber-100 text-amber-800' },
-  INTAKE_COMPLETE: { label: 'Intake Done', className: 'bg-blue-100 text-blue-800' },
-  STORED: { label: 'Stored', className: 'bg-blue-100 text-blue-800' },
-  HOLD: { label: 'Hold', className: 'bg-red-100 text-red-800' },
-  RELEASE_ELIGIBLE: { label: 'Ready', className: 'bg-green-100 text-green-800' },
-  RELEASED: { label: 'Released', className: 'bg-gray-100 text-gray-800' },
-  AUCTION_ELIGIBLE: { label: 'Auction', className: 'bg-purple-100 text-purple-800' },
-  AUCTION_LISTED: { label: 'Listed', className: 'bg-purple-100 text-purple-800' },
-  SOLD: { label: 'Sold', className: 'bg-green-100 text-green-800' },
-  DISPOSED: { label: 'Disposed', className: 'bg-gray-100 text-gray-800' },
+const statusIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  PENDING_INTAKE: Clock3,
+  INTAKE_COMPLETE: Package,
+  STORED: Package,
+  HOLD: AlertTriangle,
+  RELEASE_ELIGIBLE: CheckCircle2,
+  RELEASED: XCircle,
+  AUCTION_ELIGIBLE: Gavel,
+  AUCTION_LISTED: Gavel,
+  SOLD: CheckCircle2,
+  DISPOSED: XCircle,
 };
 
 interface StatusBadgeProps {
@@ -19,18 +28,24 @@ interface StatusBadgeProps {
 }
 
 export default function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
-  const config = statusConfig[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
+  const config = statusStyles[status] || {
+    label: status,
+    className: 'border border-border bg-surface-muted text-muted-foreground',
+  };
+  const Icon = statusIcons[status];
 
   const sizeClasses = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2.5 py-0.5 text-sm',
-    lg: 'px-3 py-1 text-base',
+    sm: 'gap-1 px-1.5 py-0.5 text-[11px]',
+    md: 'gap-1.5 px-2 py-0.5 text-xs',
+    lg: 'gap-1.5 px-2.5 py-1 text-sm',
   };
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-medium ${config.className} ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-md font-semibold tracking-wide ${config.className} ${sizeClasses[size]}`}
+      data-status={status}
     >
+      {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       {config.label}
     </span>
   );

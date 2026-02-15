@@ -8,14 +8,16 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, interactive, padding = 'md', children, ...props }, ref) => {
-    const baseStyles = 'bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700';
-    const interactiveStyles = interactive ? 'hover:border-primary dark:hover:border-primary transition-colors cursor-pointer' : '';
+    const baseStyles = 'bg-surface text-foreground rounded-lg border border-border shadow-none';
+    const interactiveStyles = interactive
+      ? 'cursor-pointer transition-colors hover:border-ring focus-within:border-ring'
+      : '';
 
     const paddings = {
       none: '',
       sm: 'p-3 sm:p-4',
-      md: 'p-4 sm:p-6',
-      lg: 'p-6 sm:p-8',
+      md: 'p-4 sm:p-5',
+      lg: 'p-5 sm:p-6',
     };
 
     return (
@@ -34,14 +36,18 @@ Card.displayName = 'Card';
 
 const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center justify-between mb-4', className)} {...props} />
+    <div ref={ref} className={cn('mb-3 flex items-center justify-between', className)} {...props} />
   )
 );
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn('text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100', className)} {...props} />
+    <h3
+      ref={ref}
+      className={cn('text-sm sm:text-base font-semibold text-foreground', className)}
+      {...props}
+    />
   )
 );
 CardTitle.displayName = 'CardTitle';

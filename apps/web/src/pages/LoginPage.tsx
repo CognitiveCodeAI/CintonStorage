@@ -35,10 +35,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary to-blue-900 text-white p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 border-r border-border bg-primary text-primary-foreground p-12 flex-col justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-3 rounded-xl">
+            <div className="rounded-xl bg-white/15 p-3">
               <Car className="h-8 w-8" />
             </div>
             <span className="text-2xl font-bold">Cinton Storage</span>
@@ -76,28 +76,28 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel - login form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
+      <div className="flex-1 flex items-center justify-center bg-background p-8">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-3">
-              <div className="bg-primary p-3 rounded-xl">
+              <div className="rounded-xl bg-primary p-3">
                 <Car className="h-8 w-8 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cinton Storage</span>
+              <span className="text-2xl font-bold text-foreground">Cinton Storage</span>
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               Impound Lot Management System
             </p>
           </div>
 
           {/* Login card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="rounded-xl border border-border bg-surface p-8 shadow-none">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="text-2xl font-bold text-foreground">
                 Welcome back
               </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Sign in to your account to continue
               </p>
             </div>
@@ -146,7 +146,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 loading={isLoading}
-                className="w-full bg-gray-900 text-white hover:bg-gray-800"
+                className="w-full"
                 size="lg"
               >
                 Sign in
@@ -156,11 +156,11 @@ export default function LoginPage() {
             {/* Demo credentials (only in dev/demo mode) */}
             {SHOW_DEMO_CREDENTIALS && (
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">
+                <p className="text-xs text-muted-foreground text-center mb-2">
                   Demo credentials:
                 </p>
-                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
-                  <code className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="rounded-md border border-border bg-surface-muted p-3 text-center">
+                  <code className="text-sm text-foreground">
                     admin@cinton.com / admin123
                   </code>
                 </div>
@@ -179,7 +179,7 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-6 text-center text-xs text-muted-foreground">
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>

@@ -11,9 +11,9 @@ function Kbd({ children, className }: KbdProps) {
       className={cn(
         'inline-flex items-center justify-center h-5 min-w-5 px-1.5',
         'text-xs font-mono font-medium',
-        'text-gray-500 dark:text-gray-400',
-        'bg-gray-100 dark:bg-gray-700',
-        'border border-gray-300 dark:border-gray-600',
+        'text-muted-foreground',
+        'bg-surface-muted',
+        'border border-border',
         'rounded',
         className
       )}
