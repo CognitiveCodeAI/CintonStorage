@@ -1,0 +1,7 @@
+# Ignore monorepo apps/api - we use api/index.ts for serverless
+apps/api
+
+# Standard ignores
+node_modules
+.git
+*.log
