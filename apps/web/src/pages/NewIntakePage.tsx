@@ -248,13 +248,6 @@ export default function NewIntakePage() {
       completeMutation.isLoading
   );
 
-  const canContinue =
-    step === 1
-      ? formData.towLocation.trim().length > 0
-      : step === 4
-      ? formData.yardLocation.trim().length > 0
-      : true;
-
   const stepHelp: Record<IntakeStep, string> = {
     1: 'Confirm tow request and location details',
     2: 'Capture vehicle identifiers and owner details',
@@ -373,20 +366,12 @@ export default function NewIntakePage() {
             {step === 1 ? 'Cancel' : 'Back'}
           </Button>
           <div className="flex items-center gap-3">
-            {!canContinue && (
-              <p className="hidden text-xs text-muted-foreground sm:block">
-                {step === 1
-                  ? 'Tow location is required'
-                  : step === 4
-                  ? 'Yard location is required'
-                  : ''}
-              </p>
-            )}
             <Button
               onClick={handleNext}
+              variant="primary"
               loading={isMutating}
-              disabled={!canContinue || isMutating}
-              className="min-w-[10.5rem]"
+              disabled={isMutating}
+              className="min-w-[10.5rem] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
             >
               {isMutating ? (
               'Processing...'
