@@ -1,7 +1,7 @@
-import { type ClassValue, clsx } from 'clsx';
+import { type ClassValue, clsx as clsxLib } from 'clsx';
 
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
+  return clsxLib(...inputs);
 }
 
 export function formatCurrency(amount: number): string {
@@ -27,8 +27,4 @@ export function formatDateTime(date: Date | string): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(date));
-}
-
-export function clsx(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }

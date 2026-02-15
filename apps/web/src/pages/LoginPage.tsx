@@ -33,55 +33,66 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 border-r border-border bg-primary text-primary-foreground p-12 flex-col justify-between">
-        <div>
+      <div className="hidden border-r border-border bg-primary text-primary-foreground lg:flex lg:w-[52%]">
+        <div className="flex w-full flex-col justify-between p-12">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-white/15 p-3">
-              <Car className="h-8 w-8" />
+            <div className="rounded-lg border border-white/25 bg-white/10 p-2.5">
+              <Car className="h-7 w-7" />
             </div>
-            <span className="text-2xl font-bold">Cinton Storage</span>
+            <span className="text-2xl font-semibold tracking-tight">Cinton Storage</span>
           </div>
-        </div>
 
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold leading-tight">
-            Impound Lot Management
-            <br />
-            Made Simple
-          </h1>
-          <p className="text-lg text-white/80 max-w-md">
-            Track vehicles, manage fees, and streamline releases with our comprehensive lot management system.
-          </p>
-          <div className="grid grid-cols-3 gap-4 pt-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold">500+</div>
-              <div className="text-sm text-white/70">Vehicles Managed</div>
+          <div className="space-y-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-white/70">Operational Control System</p>
+              <h1 className="mt-2 text-4xl font-semibold leading-tight">
+                Intake, holds, release, and case flow in one command center.
+              </h1>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold">24/7</div>
-              <div className="text-sm text-white/70">System Uptime</div>
+
+            <p className="max-w-lg text-lg text-white/82">
+              Built for speed under pressure. Scan faster, reduce misses, and keep lot operations moving.
+            </p>
+
+            <div className="overflow-hidden rounded-lg border border-white/20 bg-white/5">
+              <img
+                src="/ops-yard-illustration.svg"
+                alt="Impound lot operations board"
+                className="h-56 w-full object-cover"
+              />
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold">5min</div>
-              <div className="text-sm text-white/70">Avg. Intake Time</div>
+
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="rounded-md border border-white/15 bg-white/8 px-3 py-2.5 text-center">
+                <div className="text-2xl font-semibold">500+</div>
+                <div className="text-xs text-white/75">Vehicles Managed</div>
+              </div>
+              <div className="rounded-md border border-white/15 bg-white/8 px-3 py-2.5 text-center">
+                <div className="text-2xl font-semibold">24/7</div>
+                <div className="text-xs text-white/75">System Uptime</div>
+              </div>
+              <div className="rounded-md border border-white/15 bg-white/8 px-3 py-2.5 text-center">
+                <div className="text-2xl font-semibold">5m</div>
+                <div className="text-xs text-white/75">Avg Intake</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="text-sm text-white/60">
-          &copy; {new Date().getFullYear()} Cinton Storage. All rights reserved.
+          <div className="text-sm text-white/65">
+            &copy; {new Date().getFullYear()} Cinton Storage. All rights reserved.
+          </div>
         </div>
       </div>
 
       {/* Right panel - login form */}
-      <div className="flex-1 flex items-center justify-center bg-background p-8">
+      <div className="flex flex-1 items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-3">
-              <div className="rounded-xl bg-primary p-3">
+              <div className="rounded-lg border border-primary/25 bg-primary p-3">
                 <Car className="h-8 w-8 text-white" />
               </div>
               <span className="text-2xl font-bold text-foreground">Cinton Storage</span>
@@ -92,7 +103,7 @@ export default function LoginPage() {
           </div>
 
           {/* Login card */}
-          <div className="rounded-xl border border-border bg-surface p-8 shadow-none">
+          <div className="rounded-xl border border-border bg-surface p-8 shadow-[0_14px_32px_rgba(15,23,42,0.12)]">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-foreground">
                 Welcome back
@@ -155,7 +166,7 @@ export default function LoginPage() {
 
             {/* Demo credentials (only in dev/demo mode) */}
             {SHOW_DEMO_CREDENTIALS && (
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 border-t border-border pt-6">
                 <p className="text-xs text-muted-foreground text-center mb-2">
                   Demo credentials:
                 </p>

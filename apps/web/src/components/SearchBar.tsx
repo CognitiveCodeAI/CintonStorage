@@ -76,7 +76,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/35 transition-opacity"
+        className="fixed inset-0 bg-foreground/30 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -84,7 +84,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
       {/* Search modal */}
       <div className="flex min-h-full items-start justify-center p-4 pt-16 sm:pt-24">
         <div
-          className="relative w-full max-w-2xl transform overflow-hidden rounded-lg border border-border bg-surface shadow-none transition-all"
+          className="relative w-full max-w-2xl transform overflow-hidden rounded-lg border border-border bg-surface shadow-[0_18px_44px_rgba(15,23,42,0.22)] transition-all"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search input */}

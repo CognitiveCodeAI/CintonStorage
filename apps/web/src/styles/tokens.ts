@@ -3,17 +3,17 @@
 
 export const designTokens = {
   color: {
-    background: '#F8FAFC',
+    background: '#F2F6FC',
     surface: '#FFFFFF',
-    surfaceMuted: '#F1F5F9',
-    border: '#CBD5E1',
-    text: '#1B2538',
-    textMuted: '#566274',
+    surfaceMuted: '#EEF2F8',
+    border: '#C2CDDD',
+    text: '#1A2437',
+    textMuted: '#526176',
     semantic: {
-      success: '#1F7A44',
+      success: '#166534',
       warning: '#B45309',
-      danger: '#BE123C',
-      info: '#1D4ED8',
+      danger: '#B91C1C',
+      info: '#1E40AF',
     },
   },
   spacing: {
@@ -38,7 +38,7 @@ export const designTokens = {
   },
   shadow: {
     none: 'none',
-    subtle: '0 1px 2px rgba(15, 23, 42, 0.06)',
+    subtle: '0 1px 2px rgba(15, 23, 42, 0.08)',
   },
 } as const;
 
@@ -51,47 +51,47 @@ export const statusStyles: Record<
   PENDING_INTAKE: {
     label: 'Pending',
     tone: 'warning',
-    className: 'border border-warning/35 bg-warning-muted text-warning-foreground',
+    className: 'border border-warning/45 bg-warning-muted text-warning-foreground',
   },
   INTAKE_COMPLETE: {
     label: 'Intake Done',
     tone: 'info',
-    className: 'border border-info/35 bg-info-muted text-info-foreground',
+    className: 'border border-info/45 bg-info-muted text-info-foreground',
   },
   STORED: {
     label: 'Stored',
     tone: 'info',
-    className: 'border border-info/35 bg-info-muted text-info-foreground',
+    className: 'border border-info/45 bg-info-muted text-info-foreground',
   },
   HOLD: {
     label: 'Hold',
     tone: 'danger',
-    className: 'border border-danger/35 bg-danger-muted text-danger-foreground',
+    className: 'border border-danger/50 bg-danger-muted text-danger-foreground',
   },
   RELEASE_ELIGIBLE: {
     label: 'Ready',
     tone: 'success',
-    className: 'border border-success/35 bg-success-muted text-success-foreground',
+    className: 'border border-success/45 bg-success-muted text-success-foreground',
   },
   RELEASED: {
     label: 'Released',
     tone: 'neutral',
-    className: 'border border-border bg-surface-muted text-muted-foreground',
+    className: 'border border-border bg-surface-muted text-foreground/80',
   },
   AUCTION_ELIGIBLE: {
     label: 'Auction',
     tone: 'warning',
-    className: 'border border-warning/35 bg-warning-muted text-warning-foreground',
+    className: 'border border-warning/45 bg-warning-muted text-warning-foreground',
   },
   AUCTION_LISTED: {
     label: 'Listed',
     tone: 'warning',
-    className: 'border border-warning/35 bg-warning-muted text-warning-foreground',
+    className: 'border border-warning/45 bg-warning-muted text-warning-foreground',
   },
   SOLD: {
     label: 'Sold',
     tone: 'success',
-    className: 'border border-success/35 bg-success-muted text-success-foreground',
+    className: 'border border-success/45 bg-success-muted text-success-foreground',
   },
   DISPOSED: {
     label: 'Disposed',

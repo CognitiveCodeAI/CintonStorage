@@ -256,7 +256,7 @@ export default function NewIntakePage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-4">
         <h1 className="ops-page-title">New Intake</h1>
         <p className="ops-page-subtitle">{stepHelp[step]}</p>
@@ -264,7 +264,8 @@ export default function NewIntakePage() {
 
       {/* Progress Steps - Clickable */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="ops-surface px-3 py-3 sm:px-4">
+          <div className="flex items-center justify-between">
           {steps.map((s, idx) => {
             const Icon = s.icon;
             const isCompleted = step > s.number;
@@ -305,13 +306,14 @@ export default function NewIntakePage() {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
       {/* Case Number Badge */}
       {createdCaseNumber && (
         <div className="mb-4 text-center">
-          <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 font-mono text-lg">
+          <span className="inline-flex items-center rounded-full border border-info/45 bg-info-muted px-4 py-2 font-mono text-lg font-semibold text-info-foreground">
             Case: {createdCaseNumber}
           </span>
         </div>
@@ -325,7 +327,7 @@ export default function NewIntakePage() {
       )}
 
       {/* Form Content */}
-      <Card padding="md">
+      <Card padding="md" className="relative">
         {step === 1 && (
           <Step1TowRequest
             formData={formData}
@@ -358,38 +360,37 @@ export default function NewIntakePage() {
             caseNumber={createdCaseNumber || ''}
           />
         )}
+      </Card>
 
-        {/* Navigation Buttons */}
-        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+      <div className="sticky bottom-3 z-30 mt-4">
+        <div className="ops-surface flex items-center justify-between border-border bg-surface/95 px-4 py-3 shadow-[0_12px_26px_rgba(15,23,42,0.16)] backdrop-blur">
           <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             {step === 1 ? 'Cancel' : 'Back'}
           </Button>
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleNext}
-              variant="primary"
-              loading={isMutating}
-              disabled={isMutating}
-              className="min-w-[10.5rem] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
-            >
-              {isMutating ? (
+          <Button
+            onClick={handleNext}
+            variant="primary"
+            loading={isMutating}
+            disabled={isMutating}
+            className="min-w-[11rem] border border-primary/25"
+          >
+            {isMutating ? (
               'Processing...'
             ) : step === 4 ? (
               <>
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="mr-2 h-4 w-4" />
                 Complete Intake
               </>
             ) : (
               <>
                 Continue
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
-            </Button>
-          </div>
+          </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -407,18 +408,18 @@ function Step1TowRequest({
 }: StepProps & { agencies: Array<{ id: string; name: string }> }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <MapPin className="h-5 w-5 text-gray-400" />
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+        <MapPin className="h-5 w-5 text-info" />
         New Tow Request
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="mb-1 block text-sm font-medium text-foreground">
             Requesting Agency
           </label>
           <select
-            className="input dark:bg-gray-900 dark:border-gray-700"
+            className="input"
             value={formData.towingAgencyId}
             onChange={(e) => updateForm({ towingAgencyId: e.target.value })}
           >
@@ -432,22 +433,22 @@ function Step1TowRequest({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="mb-1 block text-sm font-medium text-foreground">
             Tow Date & Time *
           </label>
           <input
             type="datetime-local"
-            className="input dark:bg-gray-900 dark:border-gray-700"
+            className="input"
             value={formData.towDate}
             onChange={(e) => updateForm({ towDate: e.target.value })}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="mb-1 block text-sm font-medium text-foreground">
             Tow Reason *
           </label>
           <select
-            className="input dark:bg-gray-900 dark:border-gray-700"
+            className="input"
             value={formData.towReason}
             onChange={(e) => updateForm({ towReason: e.target.value as TowReason })}
           >
@@ -460,12 +461,12 @@ function Step1TowRequest({
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="mb-1 block text-sm font-medium text-foreground">
             Tow Location *
           </label>
           <input
             type="text"
-            className="input dark:bg-gray-900 dark:border-gray-700"
+            className="input"
             placeholder="123 Main Street, Clinton Township, MI"
             value={formData.towLocation}
             onChange={(e) => updateForm({ towLocation: e.target.value })}
@@ -474,39 +475,39 @@ function Step1TowRequest({
       </div>
 
       {/* Police Hold */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <label className="flex items-center gap-2 cursor-pointer">
+      <div className="ops-surface-muted p-4">
+        <label className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
-            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
             checked={formData.policeHold}
             onChange={(e) => updateForm({ policeHold: e.target.checked })}
           />
-          <span className="font-medium text-gray-900 dark:text-gray-100">
+          <span className="font-semibold text-foreground">
             Place police hold on this vehicle
           </span>
         </label>
 
         {formData.policeHold && (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Police Case Number
               </label>
               <input
                 type="text"
-                className="input dark:bg-gray-900 dark:border-gray-700"
+                className="input"
                 placeholder="2026-CT-00123"
                 value={formData.policeCaseNumber}
                 onChange={(e) => updateForm({ policeCaseNumber: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Hold Duration
               </label>
               <select
-                className="input dark:bg-gray-900 dark:border-gray-700"
+                className="input"
                 value={formData.holdDays}
                 onChange={(e) => updateForm({ holdDays: parseInt(e.target.value) })}
               >
@@ -539,23 +540,23 @@ function Step2VehicleDetails({
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <Car className="h-5 w-5 text-gray-400" />
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+        <Car className="h-5 w-5 text-info" />
         Vehicle Details
       </h2>
 
       {/* VIN with decode button */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Vehicle Identification</h3>
+      <div className="ops-surface-muted p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Vehicle Identification</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               VIN
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
-                className="input font-mono flex-1 dark:bg-gray-900 dark:border-gray-700"
+                className="input flex-1 font-mono"
                 placeholder="1HGBH41JXMN109186"
                 maxLength={17}
                 value={formData.vin}
@@ -573,31 +574,31 @@ function Step2VehicleDetails({
               </Button>
             </div>
             {vinDecodeError && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{vinDecodeError}</p>
+              <p className="mt-1 text-sm text-danger">{vinDecodeError}</p>
             )}
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {formData.vin.length}/17 characters
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Plate Number
               </label>
               <input
                 type="text"
-                className="input dark:bg-gray-900 dark:border-gray-700"
+                className="input"
                 placeholder="ABC1234"
                 value={formData.plateNumber}
                 onChange={(e) => updateForm({ plateNumber: e.target.value.toUpperCase() })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Plate State
               </label>
               <select
-                className="input dark:bg-gray-900 dark:border-gray-700"
+                className="input"
                 value={formData.plateState}
                 onChange={(e) => updateForm({ plateState: e.target.value })}
               >
@@ -613,16 +614,16 @@ function Step2VehicleDetails({
       </div>
 
       {/* Vehicle Info */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Vehicle Information</h3>
+      <div className="ops-surface-muted p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Vehicle Information</h3>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Year
             </label>
             <input
               type="number"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="2021"
               min="1900"
               max="2100"
@@ -631,47 +632,47 @@ function Step2VehicleDetails({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Make
             </label>
             <input
               type="text"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="Honda"
               value={formData.make}
               onChange={(e) => updateForm({ make: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Model
             </label>
             <input
               type="text"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="Accord"
               value={formData.model}
               onChange={(e) => updateForm({ model: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Color
             </label>
             <input
               type="text"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="Blue"
               value={formData.color}
               onChange={(e) => updateForm({ color: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Type
             </label>
             <select
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               value={formData.vehicleType}
               onChange={(e) => updateForm({ vehicleType: e.target.value as VehicleType })}
             >
@@ -683,11 +684,11 @@ function Step2VehicleDetails({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Class
             </label>
             <select
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               value={formData.vehicleClass}
               onChange={(e) => updateForm({ vehicleClass: e.target.value as VehicleClass })}
             >
@@ -702,43 +703,43 @@ function Step2VehicleDetails({
       </div>
 
       {/* Owner Info */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-          <User className="h-4 w-4 text-gray-400" />
+      <div className="ops-surface-muted p-4">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <User className="h-4 w-4 text-muted-foreground" />
           Owner Information (optional)
         </h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Owner Name
             </label>
             <input
               type="text"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="John Smith"
               value={formData.ownerName}
               onChange={(e) => updateForm({ ownerName: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Owner Address
             </label>
             <input
               type="text"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="456 Oak Avenue, Detroit, MI 48201"
               value={formData.ownerAddress}
               onChange={(e) => updateForm({ ownerAddress: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Owner Phone
             </label>
             <input
               type="tel"
-              className="input dark:bg-gray-900 dark:border-gray-700"
+              className="input"
               placeholder="555-123-4567"
               value={formData.ownerPhone}
               onChange={(e) => updateForm({ ownerPhone: e.target.value })}
@@ -759,11 +760,11 @@ function Step3PhotoCapture({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Camera className="h-5 w-5 text-gray-400" />
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+          <Camera className="h-5 w-5 text-info" />
           Photo Capture
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-sm text-muted-foreground">
           Case: {caseNumber} | {formData.year} {formData.make} {formData.model}
         </p>
       </div>
@@ -784,57 +785,57 @@ function Step4CompleteIntake({
 }: StepProps & { caseNumber: string }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <Check className="h-5 w-5 text-gray-400" />
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+        <Check className="h-5 w-5 text-success" />
         Complete Intake
       </h2>
 
       {/* Review Summary */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Review Summary</h3>
+      <div className="ops-surface-muted p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Review Summary</h3>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Case Number</p>
-            <p className="font-mono font-bold text-gray-900 dark:text-gray-100">{caseNumber}</p>
+            <p className="text-muted-foreground">Case Number</p>
+            <p className="font-mono font-bold text-foreground">{caseNumber}</p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Vehicle</p>
-            <p className="text-gray-900 dark:text-gray-100">
+            <p className="text-muted-foreground">Vehicle</p>
+            <p className="text-foreground">
               {formData.year} {formData.make} {formData.model}
             </p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">VIN</p>
-            <p className="font-mono text-gray-900 dark:text-gray-100">{formData.vin || '-'}</p>
+            <p className="text-muted-foreground">VIN</p>
+            <p className="font-mono text-foreground">{formData.vin || '-'}</p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Plate</p>
-            <p className="text-gray-900 dark:text-gray-100">
+            <p className="text-muted-foreground">Plate</p>
+            <p className="text-foreground">
               {formData.plateNumber
                 ? `${formData.plateNumber} (${formData.plateState})`
                 : '-'}
             </p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Tow Reason</p>
-            <p className="text-gray-900 dark:text-gray-100">{formData.towReason.replace(/_/g, ' ')}</p>
+            <p className="text-muted-foreground">Tow Reason</p>
+            <p className="text-foreground">{formData.towReason.replace(/_/g, ' ')}</p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Police Hold</p>
-            <p className={formData.policeHold ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-900 dark:text-gray-100'}>
+            <p className="text-muted-foreground">Police Hold</p>
+            <p className={formData.policeHold ? 'font-medium text-danger' : 'text-foreground'}>
               {formData.policeHold ? `Yes (${formData.holdDays} days)` : 'No'}
             </p>
           </div>
           <div>
-            <p className="text-gray-500 dark:text-gray-400">Photos</p>
-            <p className="text-gray-900 dark:text-gray-100">{formData.photos.length} captured</p>
+            <p className="text-muted-foreground">Photos</p>
+            <p className="text-foreground">{formData.photos.length} captured</p>
           </div>
         </div>
       </div>
 
       {/* Yard Location */}
-      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Yard Location *</h3>
+      <div className="ops-surface-muted p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Yard Location *</h3>
         <div className="grid grid-cols-6 gap-2">
           {yardLocations.map((loc) => (
             <button
@@ -842,10 +843,10 @@ function Step4CompleteIntake({
               type="button"
               onClick={() => updateForm({ yardLocation: loc })}
               className={cn(
-                'p-2 rounded-md text-sm font-medium transition-colors',
+                'rounded-md border p-2 text-sm font-semibold transition-colors',
                 formData.yardLocation === loc
-                  ? 'bg-primary text-white'
-                  : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-surface text-foreground hover:border-ring hover:bg-surface-muted'
               )}
             >
               {loc}
@@ -853,12 +854,12 @@ function Step4CompleteIntake({
           ))}
         </div>
         <div className="mt-3">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="mb-1 block text-sm font-medium text-foreground">
             Or enter manually:
           </label>
           <input
             type="text"
-            className="input dark:bg-gray-900 dark:border-gray-700"
+            className="input"
             placeholder="D-1"
             value={formData.yardLocation}
             onChange={(e) => updateForm({ yardLocation: e.target.value.toUpperCase() })}
@@ -868,11 +869,11 @@ function Step4CompleteIntake({
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="mb-1 block text-sm font-medium text-foreground">
           Intake Notes (optional)
         </label>
         <textarea
-          className="input h-20 dark:bg-gray-900 dark:border-gray-700"
+          className="input h-20"
           placeholder="Front bumper damage, keys in ignition..."
           value={formData.notes}
           onChange={(e) => updateForm({ notes: e.target.value })}

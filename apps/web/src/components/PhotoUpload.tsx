@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, Camera, X, Check, Image, Loader2 } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Camera, X, Check, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export interface Photo {
@@ -180,15 +179,15 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
 
       {/* Progress indicator */}
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-500 dark:text-gray-400">
+        <span className="text-muted-foreground">
           {capturedCount} of {photoRequirements.length} photos captured
         </span>
         <span
           className={cn(
             'font-medium',
             capturedRequired === requiredCount
-              ? 'text-green-600 dark:text-green-400'
-              : 'text-amber-600 dark:text-amber-400'
+              ? 'text-success'
+              : 'text-warning'
           )}
         >
           {capturedRequired}/{requiredCount} required
@@ -208,10 +207,10 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
               className={cn(
                 'relative aspect-[4/3] rounded-lg border-2 border-dashed overflow-hidden transition-all',
                 photo
-                  ? 'border-green-500 dark:border-green-600'
+                  ? 'border-success'
                   : isDragOver
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary',
+                  ? 'border-primary bg-info-muted'
+                  : 'border-input bg-surface hover:border-primary',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
               onDrop={(e) => !disabled && handleDrop(e, req.type)}
@@ -229,7 +228,7 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
                   <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                       onClick={() => !disabled && handleRemove(req.type)}
-                      className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      className="rounded-full bg-danger p-2 text-destructive-foreground transition-colors hover:bg-danger/90"
                       disabled={disabled}
                       aria-label={`Remove ${req.label} photo`}
                     >
@@ -237,32 +236,32 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
                     </button>
                   </div>
                   <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-xs font-semibold text-white">
                       <Check className="h-3 w-3" />
                     </span>
                   </div>
                 </>
               ) : isUploading ? (
                 // Loading state
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800">
-                  <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-                  <span className="text-xs text-gray-500">Uploading...</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-muted">
+                  <Loader2 className="mb-2 h-8 w-8 animate-spin text-primary" />
+                  <span className="text-xs text-muted-foreground">Uploading...</span>
                 </div>
               ) : (
                 // Upload prompt
                 <button
                   onClick={() => !disabled && openFileDialog(req.type)}
                   disabled={disabled}
-                  className="absolute inset-0 flex flex-col items-center justify-center p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="absolute inset-0 flex flex-col items-center justify-center p-2 transition-colors hover:bg-surface-muted"
                 >
-                  <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-2">
-                    <Camera className="h-5 w-5 text-gray-400" />
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface">
+                    <Camera className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">
+                  <span className="text-center text-xs font-semibold text-foreground">
                     {req.label}
                   </span>
                   {req.required && (
-                    <span className="text-2xs text-red-500 mt-0.5">Required</span>
+                    <span className="mt-0.5 text-2xs text-danger">Required</span>
                   )}
                 </button>
               )}
@@ -272,7 +271,7 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
       </div>
 
       {/* Help text */}
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-center text-xs text-muted-foreground">
         Click to capture or drag and drop photos. Tap camera on mobile devices.
       </p>
     </div>

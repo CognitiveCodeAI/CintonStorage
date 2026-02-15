@@ -126,6 +126,17 @@ export default function CaseListPage() {
     navigate(`/cases/${caseId}`);
   };
 
+  const holdCount = sortedCases.filter((c) => c.status === 'HOLD').length;
+  const readyCount = sortedCases.filter((c) => c.status === 'RELEASE_ELIGIBLE').length;
+  const highBalanceCount = sortedCases.filter((c) => c.balance >= 500 && c.status !== 'RELEASED').length;
+
+  const getRowTone = (status: string) => {
+    if (status === 'HOLD') return 'hover:border-l-danger focus-visible:border-l-danger';
+    if (status === 'RELEASE_ELIGIBLE') return 'hover:border-l-success focus-visible:border-l-success';
+    if (status === 'RELEASED') return 'hover:border-l-muted-foreground focus-visible:border-l-muted-foreground';
+    return 'hover:border-l-info focus-visible:border-l-info';
+  };
+
   const renderSortIcon = (key: SortKey) => {
     if (sortKey !== key) {
       return <ChevronsUpDown className="h-3 w-3 opacity-50" />;
@@ -164,6 +175,24 @@ export default function CaseListPage() {
         </Button>
       </div>
 
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card padding="sm">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Visible Cases</p>
+          <p className="mt-1 text-2xl font-semibold text-foreground">{sortedCases.length}</p>
+          <p className="text-xs text-muted-foreground">Current filter scope</p>
+        </Card>
+        <Card padding="sm">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Release Queue</p>
+          <p className="mt-1 text-2xl font-semibold text-success">{readyCount}</p>
+          <p className="text-xs text-muted-foreground">{holdCount} currently on hold</p>
+        </Card>
+        <Card padding="sm">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">High Balance</p>
+          <p className="mt-1 text-2xl font-semibold text-danger">{highBalanceCount}</p>
+          <p className="text-xs text-muted-foreground">Cases above $500 outstanding</p>
+        </Card>
+      </div>
+
       {/* Search and Filters */}
       <Card padding="sm">
         <form onSubmit={handleSearch} className="flex gap-2 sm:gap-4">
@@ -193,7 +222,7 @@ export default function CaseListPage() {
               </button>
             )}
           </div>
-          <Button type="submit">Search</Button>
+          <Button type="submit" className="min-w-[6.5rem]">Search</Button>
         </form>
 
         {/* Status Filters */}
@@ -309,7 +338,10 @@ export default function CaseListPage() {
                 {sortedCases.map((vehicleCase) => (
                   <tr
                     key={vehicleCase.id}
-                    className="group cursor-pointer border-l-2 border-l-transparent transition-colors hover:border-l-ring hover:bg-surface-muted focus-visible:border-l-ring focus-visible:bg-accent focus-visible:outline-none"
+                    className={cn(
+                      'group cursor-pointer border-l-2 border-l-transparent transition-colors odd:bg-surface even:bg-surface/80 hover:bg-surface-muted focus-visible:bg-accent focus-visible:outline-none',
+                      getRowTone(vehicleCase.status)
+                    )}
                     onClick={() => handleRowClick(vehicleCase.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -322,6 +354,9 @@ export default function CaseListPage() {
                   >
                     <td className="whitespace-nowrap px-3 py-2.5">
                       <div className="flex items-center gap-2">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-surface-muted text-[11px] font-semibold text-muted-foreground">
+                          {vehicleCase.make?.[0] || 'V'}
+                        </span>
                         <span className="font-mono text-sm font-semibold text-foreground">
                           {vehicleCase.caseNumber}
                         </span>

@@ -58,7 +58,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Segoe UI"', '"Noto Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', '"Segoe UI"', '"Noto Sans"', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'monospace'],
       },
       fontSize: {
