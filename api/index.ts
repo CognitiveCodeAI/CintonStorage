@@ -23,7 +23,7 @@ const createContext = async (req: Request) => {
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+      const decoded = jwt.verify(token, process.env.clinton_JWT_SECRET || 'cinton-default-secret') as JwtPayload;
       const dbUser = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: { id: true, email: true, name: true, roleId: true, active: true },
@@ -77,7 +77,7 @@ const authRouter = router({
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
+      process.env.clinton_JWT_SECRET || 'cinton-default-secret',
       { expiresIn: '8h' }
     );
 
