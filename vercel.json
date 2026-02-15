@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd api && npm install && npx prisma generate && cd .. && cd apps/web && npm run build",
-  "installCommand": "pnpm install",
+  "buildCommand": "cd api && npm install && npx prisma generate && cd .. && cd apps/web && npm install && npm run build",
+  "installCommand": "npm install -g pnpm && pnpm install --frozen-lockfile",
   "outputDirectory": "apps/web/dist",
   "framework": null,
   "functions": {
