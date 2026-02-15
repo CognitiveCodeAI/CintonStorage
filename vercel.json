@@ -1,21 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm vercel-build",
+  "buildCommand": "pnpm turbo run build --filter=@cinton/web",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
-  "functions": {
-    "api/index.ts": {
-      "includeFiles": "apps/api/src/**/*,packages/**/*"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/trpc/:path*",
-      "destination": "/api"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/api"
-    }
-  ]
+  "installCommand": "pnpm install"
 }
