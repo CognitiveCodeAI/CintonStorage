@@ -72,9 +72,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@cinton/api':
-        specifier: workspace:*
-        version: link:../api
       '@cinton/shared':
         specifier: workspace:*
         version: link:../../packages/shared
