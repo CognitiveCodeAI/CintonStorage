@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { Decimal } from '@prisma/client/runtime/library';
 import {
   createVehicleCaseSchema,
   completeIntakeSchema,
@@ -8,6 +9,10 @@ import {
 } from '@cinton/shared';
 import { router, protectedProcedure } from '../trpc';
 import { generateCaseNumber } from '../services/caseNumber';
+
+interface FeeLedgerEntry {
+  amount: Decimal;
+}
 
 export const vehicleCaseRouter = router({
   create: protectedProcedure
@@ -80,11 +85,11 @@ export const vehicleCaseRouter = router({
 
       // Calculate balance
       const totalCharges = vehicleCase.feeLedgerEntries
-        .filter((f) => Number(f.amount) > 0)
-        .reduce((sum, f) => sum + Number(f.amount), 0);
+        .filter((f: FeeLedgerEntry) => Number(f.amount) > 0)
+        .reduce((sum: number, f: FeeLedgerEntry) => sum + Number(f.amount), 0);
       const totalPayments = vehicleCase.feeLedgerEntries
-        .filter((f) => Number(f.amount) < 0)
-        .reduce((sum, f) => sum + Math.abs(Number(f.amount)), 0);
+        .filter((f: FeeLedgerEntry) => Number(f.amount) < 0)
+        .reduce((sum: number, f: FeeLedgerEntry) => sum + Math.abs(Number(f.amount)), 0);
       const balance = totalCharges - totalPayments;
 
       return {
@@ -136,13 +141,13 @@ export const vehicleCaseRouter = router({
       ]);
 
       // Calculate balance for each case
-      const casesWithBalance = cases.map((c) => {
+      const casesWithBalance = cases.map((c: typeof cases[0]) => {
         const totalCharges = c.feeLedgerEntries
-          .filter((f) => Number(f.amount) > 0)
-          .reduce((sum, f) => sum + Number(f.amount), 0);
+          .filter((f: FeeLedgerEntry) => Number(f.amount) > 0)
+          .reduce((sum: number, f: FeeLedgerEntry) => sum + Number(f.amount), 0);
         const totalPayments = c.feeLedgerEntries
-          .filter((f) => Number(f.amount) < 0)
-          .reduce((sum, f) => sum + Math.abs(Number(f.amount)), 0);
+          .filter((f: FeeLedgerEntry) => Number(f.amount) < 0)
+          .reduce((sum: number, f: FeeLedgerEntry) => sum + Math.abs(Number(f.amount)), 0);
         const balance = totalCharges - totalPayments;
 
         const { feeLedgerEntries: _, ...rest } = c;

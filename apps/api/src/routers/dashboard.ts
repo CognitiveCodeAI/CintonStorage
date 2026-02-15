@@ -1,4 +1,12 @@
 import { router, protectedProcedure } from '../trpc';
+import { AuditEvent } from '@prisma/client';
+
+interface CaseInfo {
+  id: string;
+  caseNumber: string;
+  make: string | null;
+  model: string | null;
+}
 
 export const dashboardRouter = router({
   stats: protectedProcedure.query(async ({ ctx }) => {
@@ -61,7 +69,7 @@ export const dashboardRouter = router({
     });
 
     // Get related case info
-    const caseIds = [...new Set(events.map((e) => e.entityId))];
+    const caseIds = [...new Set(events.map((e: AuditEvent) => e.entityId))];
     const cases = await ctx.prisma.vehicleCase.findMany({
       where: { id: { in: caseIds } },
       select: {
@@ -72,9 +80,9 @@ export const dashboardRouter = router({
       },
     });
 
-    const caseMap = new Map(cases.map((c) => [c.id, c]));
+    const caseMap = new Map<string, CaseInfo>(cases.map((c: CaseInfo) => [c.id, c]));
 
-    return events.map((event) => {
+    return events.map((event: AuditEvent) => {
       const caseInfo = caseMap.get(event.entityId);
       return {
         id: event.id,
