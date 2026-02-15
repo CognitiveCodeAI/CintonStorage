@@ -6,15 +6,12 @@ import { PhotoUpload, Photo } from '../components/PhotoUpload';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
-import { Input } from '../components/ui/Input';
-import { Spinner } from '../components/ui/Spinner';
 import { useToast } from '../components/ui/Toast';
 import { TowReason, VehicleType, VehicleClass } from '../types';
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  AlertTriangle,
   Search,
   Car,
   Camera,
@@ -244,8 +241,34 @@ export default function NewIntakePage() {
     { number: 4, label: 'Complete', icon: Check },
   ];
 
+  const isMutating = Boolean(
+    (createMutation as { isPending?: boolean; isLoading?: boolean }).isPending ??
+      createMutation.isLoading ??
+      (completeMutation as { isPending?: boolean; isLoading?: boolean }).isPending ??
+      completeMutation.isLoading
+  );
+
+  const canContinue =
+    step === 1
+      ? formData.towLocation.trim().length > 0
+      : step === 4
+      ? formData.yardLocation.trim().length > 0
+      : true;
+
+  const stepHelp: Record<IntakeStep, string> = {
+    1: 'Confirm tow request and location details',
+    2: 'Capture vehicle identifiers and owner details',
+    3: 'Upload required intake photos',
+    4: 'Assign yard location and finalize intake',
+  };
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-4">
+        <h1 className="ops-page-title">New Intake</h1>
+        <p className="ops-page-subtitle">{stepHelp[step]}</p>
+      </div>
+
       {/* Progress Steps - Clickable */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
@@ -261,19 +284,19 @@ export default function NewIntakePage() {
                   onClick={() => isClickable && handleStepClick(s.number as IntakeStep)}
                   disabled={!isClickable}
                   className={cn(
-                    'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors',
-                    isCompleted && 'bg-green-500 text-white cursor-pointer hover:bg-green-600',
-                    isCurrent && 'bg-primary text-white',
-                    !isCompleted && !isCurrent && 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
-                    isClickable && !isCompleted && !isCurrent && 'cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600'
+                    'flex h-8 w-8 items-center justify-center rounded-full border text-sm font-medium transition-colors',
+                    isCompleted && 'border-success bg-success text-white cursor-pointer',
+                    isCurrent && 'border-primary bg-primary text-primary-foreground ring-2 ring-ring/35',
+                    !isCompleted && !isCurrent && 'border-border bg-surface-muted text-muted-foreground',
+                    isClickable && !isCompleted && !isCurrent && 'cursor-pointer hover:bg-surface hover:text-foreground'
                   )}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                 </button>
                 <span
                   className={cn(
-                    'ml-2 text-sm hidden sm:inline',
-                    step >= s.number ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'
+                    'ml-2 hidden text-sm sm:inline',
+                    step >= s.number ? 'font-semibold text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   {s.label}
@@ -281,8 +304,8 @@ export default function NewIntakePage() {
                 {idx < steps.length - 1 && (
                   <div
                     className={cn(
-                      'w-8 sm:w-16 lg:w-24 h-0.5 mx-2 sm:mx-4',
-                      step > s.number ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                      'mx-2 h-0.5 w-8 sm:mx-4 sm:w-16 lg:w-24',
+                      step > s.number ? 'bg-success' : 'bg-border'
                     )}
                   />
                 )}
@@ -344,16 +367,28 @@ export default function NewIntakePage() {
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
           <Button variant="outline" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {step === 1 ? 'Cancel' : 'Back'}
           </Button>
-          <Button
-            onClick={handleNext}
-            loading={createMutation.isPending || completeMutation.isPending}
-          >
-            {createMutation.isPending || completeMutation.isPending ? (
+          <div className="flex items-center gap-3">
+            {!canContinue && (
+              <p className="hidden text-xs text-muted-foreground sm:block">
+                {step === 1
+                  ? 'Tow location is required'
+                  : step === 4
+                  ? 'Yard location is required'
+                  : ''}
+              </p>
+            )}
+            <Button
+              onClick={handleNext}
+              loading={isMutating}
+              disabled={!canContinue || isMutating}
+              className="min-w-[10.5rem]"
+            >
+              {isMutating ? (
               'Processing...'
             ) : step === 4 ? (
               <>
@@ -366,7 +401,8 @@ export default function NewIntakePage() {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </>
             )}
-          </Button>
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

@@ -1,9 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
-import { formatCurrency, formatDate } from '../lib/utils';
+import { formatCurrency } from '../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Alert } from '../components/ui/Alert';
 import { Skeleton, SkeletonCard } from '../components/ui/Skeleton';
 import {
   Car,
@@ -13,10 +12,8 @@ import {
   Clock,
   ClipboardList,
   Search,
-  CreditCard,
   ArrowRight,
   Calendar,
-  TrendingUp,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -74,7 +71,8 @@ export default function DashboardPage() {
       label: 'Stored',
       value: stats?.totalStored || 0,
       icon: Car,
-      color: 'bg-blue-500',
+      tone: 'info',
+      iconClass: 'border border-info/40 bg-info-muted text-info-foreground',
       href: '/cases?status=STORED',
       description: 'Vehicles in lot',
     },
@@ -82,7 +80,8 @@ export default function DashboardPage() {
       label: 'Ready',
       value: stats?.readyToRelease || 0,
       icon: CheckCircle,
-      color: 'bg-green-500',
+      tone: 'success',
+      iconClass: 'border border-success/40 bg-success-muted text-success-foreground',
       href: '/cases?status=RELEASE_ELIGIBLE',
       description: 'Release eligible',
       urgent: (stats?.readyToRelease || 0) > 0,
@@ -91,7 +90,8 @@ export default function DashboardPage() {
       label: 'On Hold',
       value: stats?.onHold || 0,
       icon: AlertTriangle,
-      color: 'bg-red-500',
+      tone: 'danger',
+      iconClass: 'border border-danger/40 bg-danger-muted text-danger-foreground',
       href: '/cases?status=HOLD',
       description: 'Police/lien holds',
       urgent: (stats?.onHold || 0) > 0,
@@ -100,7 +100,8 @@ export default function DashboardPage() {
       label: 'Revenue',
       value: formatCurrency(stats?.todayRevenue || 0),
       icon: DollarSign,
-      color: 'bg-emerald-500',
+      tone: 'success',
+      iconClass: 'border border-success/40 bg-success-muted text-success-foreground',
       href: '/cases',
       description: "Today's total",
       isMonetary: true,
@@ -133,14 +134,35 @@ export default function DashboardPage() {
     });
   }
 
-  if (stats?.pendingIntake && stats.pendingIntake > 0) {
+    if (stats?.pendingIntake && stats.pendingIntake > 0) {
     needsAttention.push({
       id: 'pending-intake',
       message: `${stats.pendingIntake} pending intake${stats.pendingIntake > 1 ? 's' : ''} to complete`,
-      type: 'warning',
+      type: 'error',
       href: '/cases?status=PENDING_INTAKE',
     });
   }
+
+  const attentionStyles: Record<
+    'warning' | 'error' | 'info',
+    { rowClass: string; labelClass: string; label: string }
+  > = {
+    info: {
+      rowClass: 'border-info/45 bg-info-muted',
+      labelClass: 'text-info-foreground',
+      label: 'Ready',
+    },
+    warning: {
+      rowClass: 'border-warning/45 bg-warning-muted',
+      labelClass: 'text-warning-foreground',
+      label: 'Monitor',
+    },
+    error: {
+      rowClass: 'border-danger/45 bg-danger-muted',
+      labelClass: 'text-danger-foreground',
+      label: 'Action',
+    },
+  };
 
   // Mock recent activity (in a real app, this would come from the API)
   const recentActivity = [
@@ -151,14 +173,14 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="ops-page-title">
             Dashboard
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="ops-page-subtitle mt-0.5">
             {new Date().toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -181,34 +203,34 @@ export default function DashboardPage() {
             <Link
               key={stat.label}
               to={stat.href}
-              className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:border-primary dark:hover:border-primary transition-colors"
+              className="group relative rounded-lg border border-border bg-surface p-3.5 transition-colors hover:bg-surface-muted hover:border-ring"
             >
-              {/* Urgent indicator */}
               {stat.urgent && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="absolute top-2 right-2 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-danger/45 bg-danger-muted text-danger-foreground">
+                  Action
+                </span>
               )}
 
               <div className="flex items-start justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     {stat.label}
                   </p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mt-0.5 truncate">
+                  <p className="mt-0.5 text-xl sm:text-2xl font-semibold text-foreground truncate">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 hidden sm:block">
+                  <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
                     {stat.description}
                   </p>
                 </div>
                 <div
-                  className={`${stat.color} p-2 rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform`}
+                  className={`flex-shrink-0 rounded-md p-2 ${stat.iconClass}`}
                 >
-                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
               </div>
 
-              {/* Hover arrow */}
-              <ArrowRight className="absolute bottom-3 right-3 h-4 w-4 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ArrowRight className="absolute bottom-3 right-3 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
             </Link>
           );
         })}
@@ -223,24 +245,32 @@ export default function DashboardPage() {
             <Card padding="sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <AlertTriangle className="h-5 w-5 text-danger" />
                   Needs Attention
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {needsAttention.map((item) => (
-                    <Link
-                      key={item.id}
-                      to={item.href}
-                      className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
-                    >
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {item.message}
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
-                    </Link>
-                  ))}
+                  {needsAttention.map((item) => {
+                    const style = attentionStyles[item.type];
+                    return (
+                      <Link
+                        key={item.id}
+                        to={item.href}
+                        className={`group flex items-center justify-between rounded-md border-l-2 px-3 py-2.5 transition-colors hover:opacity-90 ${style.rowClass}`}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className={`inline-flex rounded border border-current/25 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style.labelClass}`}>
+                            {style.label}
+                          </span>
+                          <span className="truncate text-sm text-foreground">
+                            {item.message}
+                          </span>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                      </Link>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -255,7 +285,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 <Link
                   to="/intake/new"
-                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-border hover:border-ring hover:bg-surface-muted transition-colors group"
                 >
                   <ClipboardList className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs sm:text-sm font-medium text-center">
@@ -269,7 +299,7 @@ export default function DashboardPage() {
                       new KeyboardEvent('keydown', { key: '/' })
                     );
                   }}
-                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-border hover:border-ring hover:bg-surface-muted transition-colors group"
                 >
                   <Search className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs sm:text-sm font-medium text-center">
@@ -278,18 +308,18 @@ export default function DashboardPage() {
                 </button>
                 <Link
                   to="/cases?status=RELEASE_ELIGIBLE"
-                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors group"
+                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-border hover:border-success/65 hover:bg-success-muted transition-colors group"
                 >
-                  <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+                  <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-success mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs sm:text-sm font-medium text-center">
                     Release
                   </span>
                 </Link>
                 <Link
                   to="/cases?status=HOLD"
-                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group"
+                  className="flex flex-col items-center p-3 sm:p-4 rounded-lg border border-border hover:border-danger/65 hover:bg-danger-muted transition-colors group"
                 >
-                  <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+                  <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-danger mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs sm:text-sm font-medium text-center">
                     Holds
                   </span>
@@ -305,7 +335,7 @@ export default function DashboardPage() {
           <Card padding="sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-gray-400" />
+                <Clock className="h-5 w-5 text-muted-foreground" />
                 Recent Activity
               </CardTitle>
             </CardHeader>
@@ -316,19 +346,19 @@ export default function DashboardPage() {
                     key={index}
                     className="flex items-start gap-3 text-sm"
                   >
-                    <span className="text-xs text-gray-400 dark:text-gray-500 w-16 flex-shrink-0 pt-0.5">
+                    <span className="w-16 flex-shrink-0 pt-0.5 text-xs text-muted-foreground">
                       {activity.time}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300">
+                    <span className="text-foreground">
                       {activity.action}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-4 border-t border-border pt-3">
                 <Link
                   to="/cases"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
                 >
                   View all activity
                   <ArrowRight className="h-3 w-3" />
@@ -345,12 +375,12 @@ export default function DashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <div className="h-2.5 w-2.5 rounded-full bg-success" />
+                  <span className="text-sm text-foreground">
                     All systems operational
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
                   <span>Last sync: Just now</span>
                 </div>
@@ -362,33 +392,33 @@ export default function DashboardPage() {
           <Card padding="sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-gray-400" />
+                <Calendar className="h-5 w-5 text-muted-foreground" />
                 Today's Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">
+                  <span className="text-muted-foreground">
                     New intakes
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-foreground">
                     2
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">
+                  <span className="text-muted-foreground">
                     Vehicles released
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-foreground">
                     1
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">
+                  <span className="text-muted-foreground">
                     Payments received
                   </span>
-                  <span className="font-medium text-green-600 dark:text-green-400">
+                  <span className="font-medium text-success">
                     {formatCurrency(stats?.todayRevenue || 0)}
                   </span>
                 </div>

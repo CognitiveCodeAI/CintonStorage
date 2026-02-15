@@ -206,8 +206,8 @@ export default function CaseListPage() {
                 'px-2.5 py-1 rounded-md border text-xs font-semibold tracking-wide transition-colors',
                 statusParam === filter.value ||
                   (!statusParam && filter.value === undefined)
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground'
+                  ? 'border-primary bg-primary text-primary-foreground shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]'
+                  : 'border-border bg-surface-muted text-foreground/80 hover:bg-surface hover:text-foreground'
               )}
             >
               {filter.label}
