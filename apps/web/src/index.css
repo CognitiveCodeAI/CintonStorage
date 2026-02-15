@@ -1,6 +1,6 @@
 /* Print styles */
 @import './styles/print.css';
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,39 +8,39 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 10%;
+    --background: 218 33% 97%;
+    --foreground: 222 34% 12%;
     --surface: 0 0% 100%;
-    --surface-muted: 220 16% 95%;
+    --surface-muted: 218 21% 94%;
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 10%;
-    --primary: 222 80% 46%;
+    --card-foreground: 222 34% 12%;
+    --primary: 221 78% 35%;
     --primary-foreground: 210 40% 99%;
-    --secondary: 220 16% 92%;
-    --secondary-foreground: 220 30% 16%;
-    --muted: 220 16% 93%;
-    --muted-foreground: 220 10% 46%;
-    --accent: 222 60% 94%;
-    --accent-foreground: 222 72% 30%;
-    --destructive: 0 72% 51%;
+    --secondary: 220 18% 91%;
+    --secondary-foreground: 222 30% 17%;
+    --muted: 220 18% 92%;
+    --muted-foreground: 220 14% 38%;
+    --accent: 220 70% 93%;
+    --accent-foreground: 221 73% 28%;
+    --destructive: 0 71% 44%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 87%;
-    --input: 220 13% 82%;
-    --ring: 222 80% 46%;
-    --success: 152 60% 36%;
+    --border: 219 22% 83%;
+    --input: 219 22% 79%;
+    --ring: 221 78% 38%;
+    --success: 149 62% 32%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 10%;
-    --success-foreground: 152 74% 18%;
-    --success-muted: 150 50% 93%;
-    --warning: 38 92% 50%;
+    --popover-foreground: 222 34% 12%;
+    --success-foreground: 149 74% 20%;
+    --success-muted: 146 48% 92%;
+    --warning: 34 90% 42%;
     --warning-foreground: 30 88% 22%;
-    --warning-muted: 42 88% 93%;
-    --danger: 0 72% 51%;
+    --warning-muted: 40 84% 91%;
+    --danger: 0 71% 44%;
     --danger-foreground: 0 69% 28%;
-    --danger-muted: 0 68% 95%;
-    --info: 222 80% 46%;
-    --info-foreground: 222 72% 28%;
-    --info-muted: 222 70% 95%;
+    --danger-muted: 0 62% 93%;
+    --info: 216 77% 37%;
+    --info-foreground: 217 75% 28%;
+    --info-muted: 214 63% 92%;
     --radius: 0.625rem;
   }
 
@@ -51,7 +51,7 @@
     --surface-muted: 224 18% 14%;
     --card: 224 22% 10%;
     --card-foreground: 220 20% 93%;
-    --primary: 222 80% 65%;
+    --primary: 221 85% 70%;
     --primary-foreground: 224 42% 8%;
     --secondary: 224 18% 18%;
     --secondary-foreground: 220 20% 88%;
@@ -63,7 +63,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 224 14% 20%;
     --input: 224 14% 24%;
-    --ring: 222 80% 65%;
+    --ring: 221 85% 70%;
     --popover: 224 22% 10%;
     --popover-foreground: 220 20% 93%;
     --success: 152 50% 50%;
@@ -72,7 +72,7 @@
     --warning: 38 90% 58%;
     --warning-foreground: 38 85% 88%;
     --warning-muted: 34 40% 16%;
-    --danger: 0 74% 62%;
+    --danger: 0 78% 64%;
     --danger-foreground: 0 85% 92%;
     --danger-muted: 0 35% 16%;
     --info: 222 80% 68%;
@@ -94,7 +94,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Manrope', 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
     font-feature-settings: 'cv11' 1, 'ss01' 1, 'ss03' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -104,6 +104,7 @@
   h2,
   h3 {
     @apply tracking-tight;
+    font-family: 'Sora', 'Manrope', system-ui, sans-serif;
     letter-spacing: -0.025em;
   }
 
@@ -131,11 +132,9 @@
 @layer components {
   .ops-shell-bg {
     background-color: hsl(var(--background));
-    background-image: radial-gradient(
-      ellipse 80% 50% at 50% -20%,
-      hsl(var(--primary) / 0.04),
-      transparent
-    );
+    background-image:
+      radial-gradient(circle at 88% -24%, hsl(var(--primary) / 0.085), transparent 44%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(218 30% 95%) 100%);
   }
 
   .btn {
@@ -179,7 +178,7 @@
   }
 
   .ops-page-title {
-    @apply text-[1.75rem] font-bold text-foreground sm:text-[2rem] sm:leading-tight;
+    @apply text-[1.78rem] font-extrabold text-foreground sm:text-[2.08rem] sm:leading-tight;
     letter-spacing: -0.035em;
   }
 

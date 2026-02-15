@@ -40,12 +40,18 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
     onClose();
   }, [navigate, onClose]);
 
+  const handleOpenCases = useCallback(() => {
+    navigate('/cases');
+    onClose();
+  }, [navigate, onClose]);
+
   return (
-    <CommandDialog open={isOpen} onOpenChange={onClose}>
+    <CommandDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <CommandInput
         placeholder="Search VIN, plate, case #, or owner..."
         value={query}
         onValueChange={setQuery}
+        aria-label="Search vehicles"
       />
       <CommandList>
         {query.length < 2 && (
@@ -53,7 +59,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
             <div className="py-8 text-center text-sm text-muted-foreground">
               <p>Type at least 2 characters to search</p>
               <div className="mt-4 flex justify-center gap-4">
-                <button onClick={() => handleSelect('/cases')} className="flex items-center gap-2 font-medium text-primary hover:underline">
+                <button onClick={handleOpenCases} className="flex items-center gap-2 font-semibold text-primary hover:underline">
                   <Car className="h-4 w-4" /> View all cases <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
@@ -77,7 +83,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
                 key={vehicleCase.id}
                 value={vehicleCase.id}
                 onSelect={() => handleSelect(vehicleCase.id)}
-                className="flex items-center justify-between"
+                className="flex items-center justify-between rounded-md border-l-2 border-l-transparent px-2 py-2.5 aria-selected:border-l-primary aria-selected:bg-accent/60"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

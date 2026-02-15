@@ -64,14 +64,19 @@ export default function Layout({ children }: LayoutProps) {
         Skip to main content
       </a>
 
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/88 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2.5 font-semibold text-foreground">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/20">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow-primary">
                 <Building2 className="h-4 w-4" />
               </span>
-              <span className="hidden text-sm sm:inline">Cinton Storage</span>
+              <span className="hidden sm:inline">
+                <span className="block text-sm font-bold">Cinton Storage</span>
+                <span className="block -mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Operations
+                </span>
+              </span>
             </Link>
 
             <div className="hidden h-5 w-px bg-border md:block" />
@@ -84,10 +89,10 @@ export default function Layout({ children }: LayoutProps) {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                      'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors',
                       active
-                        ? 'bg-secondary text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                        ? 'border-primary/25 bg-primary text-primary-foreground shadow-glow-primary'
+                        : 'border-transparent text-muted-foreground hover:border-border hover:bg-surface hover:text-foreground'
                     )}
                     title={`${item.label} (${item.shortcut})`}
                   >
@@ -102,7 +107,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
-              className="hidden md:inline-flex justify-between min-w-[320px] text-muted-foreground font-normal h-8 rounded-lg text-xs"
+              className="hidden h-9 min-w-[352px] justify-between rounded-lg border-border/90 bg-surface text-xs font-medium text-muted-foreground shadow-elevation-1 md:inline-flex"
               onClick={() => setSearchOpen(true)}
               aria-label="Search by VIN, plate, or case number"
             >
@@ -112,14 +117,14 @@ export default function Layout({ children }: LayoutProps) {
               </span>
               <Kbd>/</Kbd>
             </Button>
-            <Button variant="outline" size="icon" className="md:hidden h-8 w-8" onClick={() => setSearchOpen(true)} aria-label="Search"><Search className="h-3.5 w-3.5" /></Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 md:hidden" onClick={() => setSearchOpen(true)} aria-label="Search"><Search className="h-3.5 w-3.5" /></Button>
             <ThemeToggle />
-            <Button variant="outline" size="icon" className="hidden sm:inline-flex h-8 w-8" onClick={() => setHelpOpen(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><Keyboard className="h-3.5 w-3.5" /></Button>
+            <Button variant="outline" size="icon" className="hidden h-9 w-9 sm:inline-flex" onClick={() => setHelpOpen(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><Keyboard className="h-3.5 w-3.5" /></Button>
 
             <div className="hidden md:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5 h-8 font-normal">
+                  <Button variant="outline" size="sm" className="h-9 gap-1.5 border-border/90 bg-surface font-medium shadow-elevation-1">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
                       {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
@@ -151,7 +156,7 @@ export default function Layout({ children }: LayoutProps) {
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden h-8 w-8" aria-label="Toggle menu"><Menu className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="h-9 w-9 md:hidden" aria-label="Toggle menu"><Menu className="h-4 w-4" /></Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-3/4">
                 <div className="space-y-3 py-6">

@@ -260,7 +260,29 @@ export default function NewIntakePage() {
         <h1 className="ops-page-title">New Intake</h1>
         <p className="ops-page-subtitle">{stepHelp[step]}</p>
       </div>
-      <Card className="mb-6"><CardContent className="p-3 sm:p-4">
+
+      <Card className="mb-5 overflow-hidden border-primary/20 bg-surface shadow-elevation-2"><CardContent className="p-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr]">
+          <div className="p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Intake Workflow</p>
+            <h2 className="mt-2 text-xl font-bold tracking-tight text-foreground">
+              Structured intake with clear steps and fewer data-entry misses.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Capture tow details, verify vehicle identity, collect photos, and assign yard location in one guided flow.
+            </p>
+          </div>
+          <div className="border-l border-border/80">
+            <img
+              src="/ops-yard-illustration.svg"
+              alt="Vehicle intake workflow illustration"
+              className="h-full max-h-40 w-full object-cover lg:max-h-none"
+            />
+          </div>
+        </div>
+      </CardContent></Card>
+
+      <Card className="mb-6 border-primary/20"><CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
           {steps.map((s, idx) => {
             const Icon = s.icon;
@@ -285,14 +307,14 @@ export default function NewIntakePage() {
       {error && (
         <Alert variant="destructive" className="mb-4"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>
       )}
-      <Card className="relative"><CardContent className="p-6">
+      <Card className="relative border-border/90 shadow-elevation-2"><CardContent className="p-6">
         {step === 1 && <Step1TowRequest formData={formData} updateForm={updateForm} agencies={agencies || []} />}
         {step === 2 && <Step2VehicleDetails formData={formData} updateForm={updateForm} onDecodeVIN={handleDecodeVIN} onVINChange={handleVINChange} vinDecoding={vinDecoding} vinDecodeError={vinDecodeError} />}
         {step === 3 && <Step3PhotoCapture formData={formData} updateForm={updateForm} caseId={createdCaseId || ''} caseNumber={createdCaseNumber || ''} />}
         {step === 4 && <Step4CompleteIntake formData={formData} updateForm={updateForm} caseNumber={createdCaseNumber || ''} />}
       </CardContent></Card>
       <div className="sticky bottom-3 z-30 mt-6">
-        <Card className="border-border bg-surface/95 shadow-[0_12px_26px_rgba(15,23,42,0.16)] backdrop-blur"><CardContent className="!p-4">
+        <Card className="border-primary/20 bg-surface/95 shadow-[0_14px_30px_rgba(12,24,53,0.18)] backdrop-blur"><CardContent className="!p-4">
           <div className="flex items-center justify-between">
             <Button variant="outline" onClick={handleBack}><ArrowLeft className="mr-2 h-4 w-4" />{step === 1 ? 'Cancel' : 'Back'}</Button>
             <Button onClick={handleNext} variant="primary" loading={isMutating} disabled={isMutating} className="min-w-[11rem] border border-primary/25">

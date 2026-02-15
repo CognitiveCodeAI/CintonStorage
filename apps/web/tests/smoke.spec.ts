@@ -131,7 +131,8 @@ test('slash shortcut opens global search with focused input', async ({ page }) =
 
   await page.getByRole('heading', { name: 'Vehicle Cases' }).click();
   await page.keyboard.press('/');
-  const searchInput = page.getByLabel('Search vehicles');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  const searchInput = page.getByRole('combobox', { name: 'Search vehicles' });
   await expect(searchInput).toBeVisible();
   await expect(searchInput).toBeFocused();
 

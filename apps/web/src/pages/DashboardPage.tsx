@@ -145,12 +145,36 @@ export default function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Operational control view for intake throughput, holds, and release readiness.
+          </p>
         </div>
         <Button onClick={() => navigate('/intake/new')} size="lg" className="gap-2 sm:w-auto">
           <ClipboardList className="h-4 w-4" />
           New Intake
         </Button>
       </div>
+
+      <Card className="overflow-hidden border-primary/20 bg-surface shadow-elevation-2">
+        <div className="grid grid-cols-1 xl:grid-cols-[1.35fr_1fr]">
+          <div className="p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Command Center</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+              Keep lot operations moving with fewer misses.
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+              Priority alerts, live status, and one-click actions are consolidated below for faster dispatch decisions.
+            </p>
+          </div>
+          <div className="border-l border-border/80">
+            <img
+              src="/ops-yard-illustration.svg"
+              alt="Operational dashboard illustration"
+              className="h-full max-h-40 w-full object-cover xl:max-h-none"
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -296,7 +320,7 @@ export default function DashboardPage() {
                   <button
                     key={qa.label}
                     onClick={qa.action}
-                    className="group flex flex-col items-center rounded-xl border border-transparent bg-card p-4 transition-all duration-200 hover:border-border hover:shadow-elevation-1"
+                    className="group flex flex-col items-center rounded-xl border border-transparent bg-card p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-elevation-2"
                   >
                     {inner}
                   </button>
@@ -304,7 +328,7 @@ export default function DashboardPage() {
                   <Link
                     key={qa.label}
                     to={qa.href!}
-                    className="group flex flex-col items-center rounded-xl border border-transparent bg-card p-4 transition-all duration-200 hover:border-border hover:shadow-elevation-1"
+                    className="group flex flex-col items-center rounded-xl border border-transparent bg-card p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-elevation-2"
                   >
                     {inner}
                   </Link>

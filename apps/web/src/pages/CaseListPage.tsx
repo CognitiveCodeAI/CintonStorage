@@ -176,8 +176,29 @@ export default function CaseListPage() {
         </Button>
       </div>
 
+      <Card className="overflow-hidden border-primary/20 bg-surface shadow-elevation-2">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr]">
+          <div className="p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Case Command Board</p>
+            <h2 className="mt-2 text-xl font-bold tracking-tight text-foreground">
+              Prioritize releases, holds, and high-balance accounts faster.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Use status filters, quick search, and row-level keyboard navigation to move from intake to release without context switching.
+            </p>
+          </div>
+          <div className="border-l border-border/80">
+            <img
+              src="/ops-yard-illustration.svg"
+              alt="Case operations board illustration"
+              className="h-full max-h-40 w-full object-cover lg:max-h-none"
+            />
+          </div>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card>
+        <Card className="border-info/20">
           <CardHeader className="pb-2">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Visible Cases</p>
             <CardTitle className="text-2xl font-semibold">{sortedCases.length}</CardTitle>
@@ -186,7 +207,7 @@ export default function CaseListPage() {
             <p className="text-xs text-muted-foreground">Current filter scope</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-success/25">
           <CardHeader className="pb-2">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Release Queue</p>
             <CardTitle className="text-2xl font-semibold text-success">{readyCount}</CardTitle>
@@ -195,7 +216,7 @@ export default function CaseListPage() {
             <p className="text-xs text-muted-foreground">{holdCount} currently on hold</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-danger/25">
           <CardHeader className="pb-2">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">High Balance</p>
             <CardTitle className="text-2xl font-semibold text-danger">{highBalanceCount}</CardTitle>
@@ -207,7 +228,7 @@ export default function CaseListPage() {
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="border-primary/15">
         <CardContent className="p-5 sm:p-6">
           <form onSubmit={handleSearch} className="flex gap-3">
             <div className="flex-1 relative">
@@ -258,10 +279,10 @@ export default function CaseListPage() {
           />
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-hidden border-border/90">
           <Table>
-            <TableHeader>
-              <TableRow>
+            <TableHeader className="bg-surface-muted/75">
+              <TableRow className="hover:bg-transparent">
                 <TableHead onClick={() => handleSort('caseNumber')} className="cursor-pointer select-none">
                   <div className="flex items-center gap-1">Case #{renderSortIcon('caseNumber')}</div>
                 </TableHead>
@@ -287,7 +308,7 @@ export default function CaseListPage() {
                 <TableRow
                   key={vehicleCase.id}
                   className={cn(
-                    'group cursor-pointer border-l-2 border-l-transparent transition-colors',
+                    'group cursor-pointer border-l-2 border-l-transparent bg-surface transition-colors hover:bg-accent/45 focus-visible:bg-accent/45',
                     getRowTone(vehicleCase.status)
                   )}
                   onClick={() => handleRowClick(vehicleCase.id)}

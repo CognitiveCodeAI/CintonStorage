@@ -3,17 +3,17 @@
 
 export const designTokens = {
   color: {
-    background: '#F2F6FC',
+    background: '#F3F6FC',
     surface: '#FFFFFF',
-    surfaceMuted: '#EEF2F8',
-    border: '#C2CDDD',
-    text: '#1A2437',
-    textMuted: '#526176',
+    surfaceMuted: '#ECF0F7',
+    border: '#C7D2E4',
+    text: '#18233A',
+    textMuted: '#4B5A73',
     semantic: {
-      success: '#166534',
+      success: '#1F7A46',
       warning: '#B45309',
       danger: '#B91C1C',
-      info: '#1E40AF',
+      info: '#1D4ED8',
     },
   },
   spacing: {

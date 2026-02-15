@@ -3,6 +3,7 @@ export { Button } from './button';
 export { Card, CardHeader, CardTitle, CardContent } from './card';
 export { Input } from './input';
 export { Select } from './select';
+export { Label } from './label';
 export { Alert } from './alert';
 export { Table } from './table';
 export { EmptyState } from './empty-state';
