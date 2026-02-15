@@ -1,6 +1,13 @@
 # Ignore monorepo apps/api - we use api/index.ts for serverless
 apps/api
 
+# Ignore pnpm files to force npm detection
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Ignore turbo
+turbo.json.disabled
+
 # Standard ignores
 node_modules
 .git
