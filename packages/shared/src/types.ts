@@ -88,8 +88,12 @@ export interface VehicleCase {
   towLocation: string;
   towingAgencyId: string | null;
   yardLocation: string | null;
-  ownerName: string | null;
+  ownerFirstName: string | null;
+  ownerLastName: string | null;
   ownerAddress: string | null;
+  ownerCity: string | null;
+  ownerState: string | null;
+  ownerZip: string | null;
   ownerPhone: string | null;
   lienholderName: string | null;
   lienholderAddress: string | null;

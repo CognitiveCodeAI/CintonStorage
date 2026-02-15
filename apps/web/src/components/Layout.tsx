@@ -5,19 +5,29 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
+import { Button, buttonVariants } from './ui/Button';
 import { Kbd } from './ui/Kbd';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   LayoutDashboard,
   Car,
   ClipboardList,
   LogOut,
   Menu,
-  X,
   Search,
   Keyboard,
   ChevronDown,
   Building2,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: ReactNode;
@@ -39,12 +49,9 @@ const isActiveRoute = (pathname: string, href: string) => {
 export default function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  // Initialize keyboard shortcuts
   useKeyboardShortcuts({
     onSearchOpen: () => setSearchOpen(true),
     onHelpOpen: () => setHelpOpen(true),
@@ -52,41 +59,38 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen ops-shell-bg">
-      {/* Skip to content link for accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface focus:text-primary focus:rounded-md focus:border focus:border-border focus:outline-none focus:ring-2 focus:ring-ring"
-      >
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface focus:text-primary focus:rounded-md focus:border focus:border-border focus:outline-none focus:ring-2 focus:ring-ring">
         Skip to main content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-border/90 bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5 text-sm font-semibold text-foreground">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-surface-muted">
-                <Building2 className="h-4 w-4 text-primary" />
+      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-[1540px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2.5 font-semibold text-foreground">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/20">
+                <Building2 className="h-4 w-4" />
               </span>
-              <span className="hidden sm:inline">Cinton Storage</span>
-              <span className="sm:hidden">Cinton</span>
+              <span className="hidden text-sm sm:inline">Cinton Storage</span>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1">
+            <div className="hidden h-5 w-px bg-border md:block" />
+
+            <nav className="hidden md:flex items-center gap-0.5">
               {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActiveRoute(location.pathname, item.href);
+                const active = isActiveRoute(location.pathname, item.href);
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20'
-                        : 'border-transparent text-foreground hover:border-border hover:bg-surface-muted'
-                    }`}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                      active
+                        ? 'bg-secondary text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    )}
                     title={`${item.label} (${item.shortcut})`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -94,138 +98,85 @@ export default function Layout({ children }: LayoutProps) {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              className="hidden md:inline-flex justify-between min-w-[320px] text-muted-foreground font-normal h-8 rounded-lg text-xs"
               onClick={() => setSearchOpen(true)}
-              className="hidden md:inline-flex h-10 min-w-[360px] items-center justify-between rounded-md border border-input bg-surface px-3 text-sm text-muted-foreground shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-ring hover:bg-surface-muted"
               aria-label="Search by VIN, plate, or case number"
             >
               <span className="inline-flex items-center gap-2">
-                <Search className="h-4 w-4" />
+                <Search className="h-3.5 w-3.5" />
                 Search VIN, plate, case #
               </span>
               <Kbd>/</Kbd>
-            </button>
-
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground transition-colors hover:border-ring hover:bg-surface-muted hover:text-foreground md:hidden"
-              aria-label="Search"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-
+            </Button>
+            <Button variant="outline" size="icon" className="md:hidden h-8 w-8" onClick={() => setSearchOpen(true)} aria-label="Search"><Search className="h-3.5 w-3.5" /></Button>
             <ThemeToggle />
+            <Button variant="outline" size="icon" className="hidden sm:inline-flex h-8 w-8" onClick={() => setHelpOpen(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><Keyboard className="h-3.5 w-3.5" /></Button>
 
-            <button
-              onClick={() => setHelpOpen(true)}
-              className="hidden h-10 w-10 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground transition-colors hover:border-ring hover:bg-surface-muted hover:text-foreground sm:inline-flex"
-              aria-label="Keyboard shortcuts"
-              title="Keyboard shortcuts (?)"
-            >
-              <Keyboard className="h-4 w-4" />
-            </button>
-
-            <div className="hidden md:block relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="inline-flex h-10 items-center gap-2 rounded-md border border-input bg-surface px-3 text-sm text-foreground transition-colors hover:border-ring hover:bg-surface-muted"
-              >
-                <span className="max-w-28 truncate">{user?.name}</span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </button>
-
-              {userMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setUserMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-border bg-surface shadow-[0_8px_24px_rgba(15,23,42,0.12)]">
-                    <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
-                      {user?.email}
+            <div className="hidden md:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 font-normal">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                    <span className="max-w-24 truncate text-xs">{user?.name}</span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground transition-colors hover:bg-surface-muted"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </button>
-                  </div>
-                </>
-              )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
-            <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-input bg-surface text-muted-foreground hover:border-ring hover:bg-surface-muted hover:text-foreground md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden h-8 w-8" aria-label="Toggle menu"><Menu className="h-4 w-4" /></Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-3/4">
+                <div className="space-y-3 py-6">
+                  {navItems.map((item) => (
+                    <SheetClose asChild key={item.href}>
+                      <Link to={item.href} className={cn(buttonVariants({ variant: isActiveRoute(location.pathname, item.href) ? 'secondary' : 'ghost' }), 'w-full justify-start gap-3 text-base')}>
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SheetClose>
+                  ))}
+                  <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                    <div className="border-t pt-4">
+                      <p className="px-3 text-sm font-medium">{user?.name}</p>
+                      <p className="px-3 text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <SheetClose asChild>
+                      <Button variant="ghost" className="w-full justify-start gap-3" onClick={logout}><LogOut className="h-5 w-5" /><span>Logout</span></Button>
+                    </SheetClose>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="border-t border-border bg-surface md:hidden">
-            <div className="space-y-1 px-3 py-3">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActiveRoute(location.pathname, item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={`flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium ${
-                      isActive
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-transparent text-foreground hover:border-border hover:bg-surface-muted'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-              <div className="mt-2 border-t border-border pt-2">
-                <div className="px-3 py-2 text-xs text-muted-foreground">
-                  {user?.name} ({user?.email})
-                </div>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                  }}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-muted"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* Main Content */}
-      <main
-        id="main-content"
-        className="mx-auto max-w-[1540px] px-4 py-5 sm:px-6 lg:px-8"
-        role="main"
-        tabIndex={-1}
-      >
+      <main id="main-content" className="mx-auto max-w-[1540px] px-4 py-6 sm:px-6 lg:px-8" role="main" tabIndex={-1}>
         {children}
       </main>
 
-      {/* Search Modal */}
       <SearchBar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-
-      {/* Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsHelp isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );

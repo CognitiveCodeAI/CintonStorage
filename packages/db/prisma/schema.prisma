@@ -349,8 +349,12 @@ model VehicleCase {
   yardLocation    String?   @map("yard_location")
 
   // Owner/lienholder
-  ownerName         String? @map("owner_name")
+  ownerFirstName    String? @map("owner_first_name")
+  ownerLastName     String? @map("owner_last_name")
   ownerAddress      String? @map("owner_address")
+  ownerCity         String? @map("owner_city")
+  ownerState        String? @map("owner_state")
+  ownerZip          String? @map("owner_zip")
   ownerPhone        String? @map("owner_phone")
   lienholderName    String? @map("lienholder_name")
   lienholderAddress String? @map("lienholder_address")

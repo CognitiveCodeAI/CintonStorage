@@ -36,8 +36,12 @@ export const createVehicleCaseSchema = z.object({
   color: z.string().optional(),
   vehicleType: z.nativeEnum(VehicleType).default(VehicleType.SEDAN),
   vehicleClass: z.nativeEnum(VehicleClass).default(VehicleClass.STANDARD),
-  ownerName: z.string().optional(),
+  ownerFirstName: z.string().optional(),
+  ownerLastName: z.string().optional(),
   ownerAddress: z.string().optional(),
+  ownerCity: z.string().optional(),
+  ownerState: z.string().max(2).optional(),
+  ownerZip: z.string().optional(),
   ownerPhone: z.string().optional(),
 });
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Camera, X, Check, Loader2 } from 'lucide-react';
+import { Camera, X, Check, Loader2, ImagePlus } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export interface Photo {
@@ -46,8 +46,9 @@ interface PhotoUploadProps {
 export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoUploadProps) {
   const [uploading, setUploading] = useState<PhotoType | null>(null);
   const [dragOver, setDragOver] = useState<PhotoType | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectedTypeRef = useRef<PhotoType | null>(null);
+  const [activeMenu, setActiveMenu] = useState<PhotoType | null>(null);
+  const cameraInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const galleryInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const getPhotoForType = (type: PhotoType): Photo | undefined => {
     return photos.find((p) => p.type === type);
@@ -60,13 +61,9 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
     }
 
     setUploading(type);
+    setActiveMenu(null);
 
     try {
-      // Create form data for upload
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Upload to Vercel Blob via our API endpoint
       const response = await fetch(`/api/upload?filename=${caseId}-${type}-${Date.now()}.${file.name.split('.').pop()}`, {
         method: 'POST',
         body: file,
@@ -78,7 +75,6 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
 
       const blob = await response.json();
 
-      // Add to photos array
       const newPhoto: Photo = {
         id: `${type}-${Date.now()}`,
         type,
@@ -86,13 +82,12 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
         filename: blob.pathname,
       };
 
-      // Remove existing photo of this type and add new one
       const updatedPhotos = photos.filter((p) => p.type !== type);
       updatedPhotos.push(newPhoto);
       onPhotosChange(updatedPhotos);
     } catch (error) {
       console.error('Upload error:', error);
-      // For demo/offline mode, simulate upload with local URL
+      // Fallback: use local object URL for demo/offline mode
       const localUrl = URL.createObjectURL(file);
       const newPhoto: Photo = {
         id: `${type}-${Date.now()}`,
@@ -108,7 +103,7 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: PhotoType) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: PhotoType) => {
     const file = e.target.files?.[0];
     if (file) {
       handleUpload(file, type);
@@ -144,19 +139,17 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
     onPhotosChange(updatedPhotos);
   };
 
-  const openFileDialog = (type: PhotoType) => {
-    selectedTypeRef.current = type;
-    fileInputRef.current?.click();
+  const openCamera = (type: PhotoType) => {
+    cameraInputRefs.current[type]?.click();
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    const type = selectedTypeRef.current;
-    if (file && type) {
-      handleUpload(file, type);
-    }
-    e.target.value = '';
-    selectedTypeRef.current = null;
+  const openGallery = (type: PhotoType) => {
+    galleryInputRefs.current[type]?.click();
+  };
+
+  const handleSlotClick = (type: PhotoType) => {
+    if (disabled) return;
+    setActiveMenu((prev) => (prev === type ? null : type));
   };
 
   const capturedCount = photos.length;
@@ -167,16 +160,6 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
 
   return (
     <div className="space-y-4">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileInputChange}
-      />
-
       {/* Progress indicator */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
@@ -200,6 +183,7 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
           const photo = getPhotoForType(req.type);
           const isUploading = uploading === req.type;
           const isDragOver = dragOver === req.type;
+          const isMenuOpen = activeMenu === req.type;
 
           return (
             <div
@@ -217,6 +201,23 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
               onDragOver={(e) => !disabled && handleDragOver(e, req.type)}
               onDragLeave={handleDragLeave}
             >
+              {/* Per-slot hidden inputs */}
+              <input
+                ref={(el) => { cameraInputRefs.current[req.type] = el; }}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => handleFileChange(e, req.type)}
+              />
+              <input
+                ref={(el) => { galleryInputRefs.current[req.type] = el; }}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFileChange(e, req.type)}
+              />
+
               {photo ? (
                 // Photo preview
                 <>
@@ -248,22 +249,50 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
                   <span className="text-xs text-muted-foreground">Uploading...</span>
                 </div>
               ) : (
-                // Upload prompt
-                <button
-                  onClick={() => !disabled && openFileDialog(req.type)}
-                  disabled={disabled}
-                  className="absolute inset-0 flex flex-col items-center justify-center p-2 transition-colors hover:bg-surface-muted"
-                >
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface">
-                    <Camera className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-center text-xs font-semibold text-foreground">
-                    {req.label}
-                  </span>
-                  {req.required && (
-                    <span className="mt-0.5 text-2xs text-danger">Required</span>
+                // Upload prompt with action menu
+                <div className="absolute inset-0 flex flex-col">
+                  <button
+                    onClick={() => handleSlotClick(req.type)}
+                    disabled={disabled}
+                    className="flex flex-1 flex-col items-center justify-center p-2 transition-colors hover:bg-surface-muted"
+                  >
+                    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface">
+                      <Camera className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <span className="text-center text-xs font-semibold text-foreground">
+                      {req.label}
+                    </span>
+                    {req.required && (
+                      <span className="mt-0.5 text-[10px] text-danger">Required</span>
+                    )}
+                  </button>
+
+                  {/* Action menu */}
+                  {isMenuOpen && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-stretch justify-center gap-2 bg-surface/95 backdrop-blur-sm p-3">
+                      <button
+                        onClick={() => openCamera(req.type)}
+                        className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
+                      >
+                        <Camera className="h-4 w-4" />
+                        Take Photo
+                      </button>
+                      <button
+                        onClick={() => openGallery(req.type)}
+                        className="flex items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-muted active:scale-[0.98]"
+                      >
+                        <ImagePlus className="h-4 w-4" />
+                        Choose File
+                      </button>
+                      <button
+                        onClick={() => setActiveMenu(null)}
+                        className="mt-1 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   )}
-                </button>
+                </div>
               )}
             </div>
           );
@@ -272,7 +301,7 @@ export function PhotoUpload({ caseId, photos, onPhotosChange, disabled }: PhotoU
 
       {/* Help text */}
       <p className="text-center text-xs text-muted-foreground">
-        Click to capture or drag and drop photos. Tap camera on mobile devices.
+        Tap a slot to take a photo or choose from your device. Drag and drop on desktop.
       </p>
     </div>
   );

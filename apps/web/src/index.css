@@ -1,6 +1,6 @@
 /* Print styles */
 @import './styles/print.css';
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,72 +8,76 @@
 
 @layer base {
   :root {
-    --background: 211 36% 96%;
-    --foreground: 219 35% 14%;
+    --background: 220 20% 97%;
+    --foreground: 220 30% 10%;
     --surface: 0 0% 100%;
-    --surface-muted: 214 29% 94%;
+    --surface-muted: 220 16% 95%;
     --card: 0 0% 100%;
-    --card-foreground: 219 35% 14%;
-    --primary: 217 78% 25%;
+    --card-foreground: 220 30% 10%;
+    --primary: 222 80% 46%;
     --primary-foreground: 210 40% 99%;
-    --secondary: 214 21% 90%;
-    --secondary-foreground: 219 35% 18%;
-    --muted: 214 20% 92%;
-    --muted-foreground: 216 19% 36%;
-    --accent: 213 88% 93%;
-    --accent-foreground: 217 72% 30%;
-    --destructive: 0 74% 43%;
+    --secondary: 220 16% 92%;
+    --secondary-foreground: 220 30% 16%;
+    --muted: 220 16% 93%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 222 60% 94%;
+    --accent-foreground: 222 72% 30%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 216 28% 80%;
-    --input: 216 28% 76%;
-    --ring: 217 85% 42%;
-    --success: 145 67% 30%;
-    --success-foreground: 146 74% 20%;
-    --success-muted: 142 56% 91%;
-    --warning: 32 91% 37%;
-    --warning-foreground: 26 88% 22%;
-    --warning-muted: 40 90% 90%;
-    --danger: 0 74% 43%;
+    --border: 220 13% 87%;
+    --input: 220 13% 82%;
+    --ring: 222 80% 46%;
+    --success: 152 60% 36%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 10%;
+    --success-foreground: 152 74% 18%;
+    --success-muted: 150 50% 93%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 88% 22%;
+    --warning-muted: 42 88% 93%;
+    --danger: 0 72% 51%;
     --danger-foreground: 0 69% 28%;
-    --danger-muted: 0 72% 92%;
-    --info: 214 83% 38%;
-    --info-foreground: 217 72% 28%;
-    --info-muted: 213 88% 92%;
-    --radius: 0.5rem;
+    --danger-muted: 0 68% 95%;
+    --info: 222 80% 46%;
+    --info-foreground: 222 72% 28%;
+    --info-muted: 222 70% 95%;
+    --radius: 0.625rem;
   }
 
   .dark {
-    --background: 222 28% 9%;
-    --foreground: 214 37% 92%;
-    --surface: 223 25% 12%;
-    --surface-muted: 223 20% 16%;
-    --card: 223 25% 12%;
-    --card-foreground: 214 37% 92%;
-    --primary: 214 88% 72%;
-    --primary-foreground: 222 42% 10%;
-    --secondary: 223 18% 20%;
-    --secondary-foreground: 214 28% 89%;
-    --muted: 223 19% 18%;
-    --muted-foreground: 216 16% 72%;
-    --accent: 216 45% 20%;
-    --accent-foreground: 214 86% 91%;
+    --background: 224 28% 7%;
+    --foreground: 220 20% 93%;
+    --surface: 224 22% 10%;
+    --surface-muted: 224 18% 14%;
+    --card: 224 22% 10%;
+    --card-foreground: 220 20% 93%;
+    --primary: 222 80% 65%;
+    --primary-foreground: 224 42% 8%;
+    --secondary: 224 18% 18%;
+    --secondary-foreground: 220 20% 88%;
+    --muted: 224 16% 16%;
+    --muted-foreground: 220 10% 58%;
+    --accent: 224 35% 18%;
+    --accent-foreground: 222 80% 88%;
     --destructive: 0 74% 61%;
     --destructive-foreground: 0 0% 100%;
-    --border: 218 17% 27%;
-    --input: 218 17% 30%;
-    --ring: 214 92% 70%;
-    --success: 145 54% 51%;
-    --success-foreground: 145 84% 89%;
-    --success-muted: 146 43% 20%;
-    --warning: 36 94% 58%;
-    --warning-foreground: 36 90% 87%;
-    --warning-muted: 31 46% 21%;
-    --danger: 0 77% 64%;
-    --danger-foreground: 0 90% 90%;
-    --danger-muted: 0 40% 22%;
-    --info: 214 83% 68%;
-    --info-foreground: 214 81% 90%;
-    --info-muted: 214 46% 22%;
+    --border: 224 14% 20%;
+    --input: 224 14% 24%;
+    --ring: 222 80% 65%;
+    --popover: 224 22% 10%;
+    --popover-foreground: 220 20% 93%;
+    --success: 152 50% 50%;
+    --success-foreground: 152 80% 88%;
+    --success-muted: 152 35% 15%;
+    --warning: 38 90% 58%;
+    --warning-foreground: 38 85% 88%;
+    --warning-muted: 34 40% 16%;
+    --danger: 0 74% 62%;
+    --danger-foreground: 0 85% 92%;
+    --danger-muted: 0 35% 16%;
+    --info: 222 80% 68%;
+    --info-foreground: 222 78% 90%;
+    --info-muted: 222 40% 16%;
   }
 }
 
@@ -90,18 +94,21 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'IBM Plex Sans', 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
-    font-feature-settings: 'tnum' 1, 'cv11' 1;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv11' 1, 'ss01' 1, 'ss03' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1,
   h2,
   h3 {
     @apply tracking-tight;
+    letter-spacing: -0.025em;
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    @apply outline-none ring-2 ring-ring/40 ring-offset-2 ring-offset-background;
   }
 
   :focus:not(:focus-visible) {
@@ -124,39 +131,39 @@
 @layer components {
   .ops-shell-bg {
     background-color: hsl(var(--background));
-    background-image:
-      linear-gradient(hsl(var(--border) / 0.28) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--border) / 0.28) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: -1px -1px;
+    background-image: radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      hsl(var(--primary) / 0.04),
+      transparent
+    );
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-md border border-transparent px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-lg border border-transparent px-4 py-2 text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply btn bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 active:bg-primary/95;
+    @apply btn bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98];
   }
 
   .btn-secondary {
-    @apply btn bg-secondary text-secondary-foreground hover:bg-secondary/85 active:bg-secondary;
+    @apply btn bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98];
   }
 
   .btn-destructive {
-    @apply btn bg-destructive text-destructive-foreground hover:bg-destructive/90;
+    @apply btn bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98];
   }
 
   .btn-outline {
-    @apply btn border border-input bg-surface text-foreground hover:border-ring hover:bg-surface-muted;
+    @apply btn border border-input bg-surface text-foreground hover:border-ring/50 hover:bg-surface-muted active:scale-[0.98];
   }
 
   .btn-ghost {
-    @apply btn text-muted-foreground hover:bg-surface-muted hover:text-foreground;
+    @apply btn text-muted-foreground hover:bg-surface-muted hover:text-foreground active:scale-[0.98];
   }
 
   .input {
-    @apply flex h-10 w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-10 w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .label {
@@ -164,7 +171,7 @@
   }
 
   .card {
-    @apply rounded-lg border bg-surface text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.06)];
+    @apply rounded-xl border bg-surface text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.06)];
   }
 
   .badge {
@@ -172,7 +179,8 @@
   }
 
   .ops-page-title {
-    @apply text-2xl font-semibold text-foreground sm:text-[1.9rem] sm:leading-tight;
+    @apply text-[1.75rem] font-bold text-foreground sm:text-[2rem] sm:leading-tight;
+    letter-spacing: -0.035em;
   }
 
   .ops-page-subtitle {
@@ -180,10 +188,10 @@
   }
 
   .ops-surface {
-    @apply rounded-lg border bg-surface shadow-[0_1px_2px_rgba(15,23,42,0.06)];
+    @apply rounded-xl border bg-surface shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.06)];
   }
 
   .ops-surface-muted {
-    @apply rounded-md border bg-surface-muted shadow-none;
+    @apply rounded-lg border bg-surface-muted shadow-none;
   }
 }

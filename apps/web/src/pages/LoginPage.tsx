@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Alert } from '../components/ui/Alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car } from 'lucide-react';
 
 // Show demo credentials only in development/demo mode
@@ -103,70 +104,72 @@ export default function LoginPage() {
           </div>
 
           {/* Login card */}
-          <div className="rounded-xl border border-border bg-surface p-8 shadow-[0_14px_32px_rgba(15,23,42,0.12)]">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-foreground">
+          <Card className="shadow-[0_14px_32px_rgba(15,23,42,0.12)]">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold">
                 Welcome back
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              </CardTitle>
+              <CardDescription className="mt-1 text-sm text-muted-foreground">
                 Sign in to your account to continue
-              </p>
-            </div>
-
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <Input
-                label="Email address"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <div>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-5" onSubmit={handleSubmit}>
                 <Input
-                  label="Password"
-                  type="password"
-                  autoComplete="current-password"
+                  label="Email address"
+                  type="email"
+                  autoComplete="email"
                   required
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-                <div className="mt-1 text-right">
-                  <a
-                    href="#"
-                    className="text-sm text-primary hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Placeholder for forgot password flow
-                    }}
-                  >
-                    Forgot password?
-                  </a>
+
+                <div>
+                  <Input
+                    label="Password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <div className="mt-1 text-right">
+                    <a
+                      href="#"
+                      className="text-sm text-primary hover:underline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Placeholder for forgot password flow
+                      }}
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
                 </div>
-              </div>
 
-              {error && (
-                <Alert variant="error" onDismiss={() => setError('')}>
-                  {error}
-                </Alert>
-              )}
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Login Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-              <Button
-                type="submit"
-                loading={isLoading}
-                className="w-full"
-                size="lg"
-              >
-                Sign in
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  loading={isLoading}
+                  className="w-full"
+                  size="lg"
+                >
+                  Sign in
+                </Button>
+              </form>
+            </CardContent>
 
             {/* Demo credentials (only in dev/demo mode) */}
             {SHOW_DEMO_CREDENTIALS && (
-              <div className="mt-6 border-t border-border pt-6">
+              <CardFooter className="flex-col pt-6 border-t mt-6">
                 <p className="text-xs text-muted-foreground text-center mb-2">
                   Demo credentials:
                 </p>
@@ -185,9 +188,9 @@ export default function LoginPage() {
                 >
                   Auto-fill demo credentials
                 </button>
-              </div>
+              </CardFooter>
             )}
-          </div>
+          </Card>
 
           {/* Footer */}
           <p className="mt-6 text-center text-xs text-muted-foreground">

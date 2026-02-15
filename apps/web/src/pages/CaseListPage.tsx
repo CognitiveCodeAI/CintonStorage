@@ -1,13 +1,23 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
-import { formatCurrency, formatDate } from '../lib/utils';
+import { formatCurrency, formatDate, cn } from '../lib/utils';
 import StatusBadge from '../components/StatusBadge';
-import { Card } from '../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { SkeletonTable } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Kbd } from '../components/ui/Kbd';
+import { Toggle } from '@/components/ui/toggle';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   Search,
   ChevronRight,
@@ -18,7 +28,6 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { VehicleCaseStatus } from '../types';
-import { cn } from '../lib/utils';
 
 const statusFilters = [
   { label: 'All', value: undefined },
@@ -46,10 +55,8 @@ export default function CaseListPage() {
     offset: 0,
   });
 
-  // Calculate days stored for each case
   const casesWithDays = useMemo(() => {
     if (!data?.cases) return [];
-
     return data.cases.map((c) => {
       const towDate = new Date(c.towDate);
       const now = new Date();
@@ -59,13 +66,10 @@ export default function CaseListPage() {
     });
   }, [data?.cases]);
 
-  // Sort cases
   const sortedCases = useMemo(() => {
     const sorted = [...casesWithDays];
-
     sorted.sort((a, b) => {
       let comparison = 0;
-
       switch (sortKey) {
         case 'caseNumber':
           comparison = a.caseNumber.localeCompare(b.caseNumber);
@@ -85,10 +89,8 @@ export default function CaseListPage() {
           comparison = a.balance - b.balance;
           break;
       }
-
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-
     return sorted;
   }, [casesWithDays, sortKey, sortDirection]);
 
@@ -148,7 +150,6 @@ export default function CaseListPage() {
     );
   };
 
-  // Balance color helper
   const getBalanceColor = (balance: number, status: string) => {
     if (balance === 0) return 'text-success';
     if (status === 'RELEASED') return 'text-muted-foreground';
@@ -176,73 +177,68 @@ export default function CaseListPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card padding="sm">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Visible Cases</p>
-          <p className="mt-1 text-2xl font-semibold text-foreground">{sortedCases.length}</p>
-          <p className="text-xs text-muted-foreground">Current filter scope</p>
+        <Card>
+          <CardHeader className="pb-2">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Visible Cases</p>
+            <CardTitle className="text-2xl font-semibold">{sortedCases.length}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Current filter scope</p>
+          </CardContent>
         </Card>
-        <Card padding="sm">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Release Queue</p>
-          <p className="mt-1 text-2xl font-semibold text-success">{readyCount}</p>
-          <p className="text-xs text-muted-foreground">{holdCount} currently on hold</p>
+        <Card>
+          <CardHeader className="pb-2">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Release Queue</p>
+            <CardTitle className="text-2xl font-semibold text-success">{readyCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">{holdCount} currently on hold</p>
+          </CardContent>
         </Card>
-        <Card padding="sm">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">High Balance</p>
-          <p className="mt-1 text-2xl font-semibold text-danger">{highBalanceCount}</p>
-          <p className="text-xs text-muted-foreground">Cases above $500 outstanding</p>
+        <Card>
+          <CardHeader className="pb-2">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">High Balance</p>
+            <CardTitle className="text-2xl font-semibold text-danger">{highBalanceCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Cases above $500 outstanding</p>
+          </CardContent>
         </Card>
       </div>
 
       {/* Search and Filters */}
-      <Card padding="sm">
-        <form onSubmit={handleSearch} className="flex gap-2 sm:gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search by VIN, plate, case #, or owner..."
-              className="input pl-10 pr-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search cases"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  const params = new URLSearchParams(searchParams);
-                  params.delete('query');
-                  setSearchParams(params);
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-          <Button type="submit" className="min-w-[6.5rem]">Search</Button>
-        </form>
+      <Card>
+        <CardContent className="p-5 sm:p-6">
+          <form onSubmit={handleSearch} className="flex gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by VIN, plate, case #, or owner..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search cases"
+              />
+            </div>
+            <Button type="submit" className="min-w-[6.5rem]">Search</Button>
+          </form>
 
-        {/* Status Filters */}
-        <div className="flex flex-wrap gap-2 mt-3">
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.label}
-              onClick={() => handleStatusFilter(filter.value)}
-              className={cn(
-                'px-2.5 py-1 rounded-md border text-xs font-semibold tracking-wide transition-colors',
-                statusParam === filter.value ||
-                  (!statusParam && filter.value === undefined)
-                  ? 'border-primary bg-primary text-primary-foreground shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]'
-                  : 'border-border bg-surface-muted text-foreground/80 hover:bg-surface hover:text-foreground'
-              )}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
+          {/* Status Filters */}
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {statusFilters.map((filter) => (
+              <Toggle
+                key={filter.label}
+                pressed={statusParam === filter.value || (!statusParam && filter.value === undefined)}
+                onPressedChange={() => handleStatusFilter(filter.value)}
+                size="sm"
+                className="tracking-wide"
+              >
+                {filter.label}
+              </Toggle>
+            ))}
+          </div>
+        </CardContent>
       </Card>
 
       {/* Results */}
@@ -262,178 +258,120 @@ export default function CaseListPage() {
           />
         </Card>
       ) : (
-        <Card padding="none" className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-surface-muted">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
-                    onClick={() => handleSort('caseNumber')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Case #
-                      {renderSortIcon('caseNumber')}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
-                    onClick={() => handleSort('vehicle')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Vehicle
-                      {renderSortIcon('vehicle')}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
-                  >
-                    Plate
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
-                    onClick={() => handleSort('daysStored')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Days
-                      {renderSortIcon('daysStored')}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
-                    onClick={() => handleSort('towDate')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Tow Date
-                      {renderSortIcon('towDate')}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground"
-                    onClick={() => handleSort('balance')}
-                  >
-                    <div className="flex items-center gap-1 justify-end">
-                      Balance
-                      {renderSortIcon('balance')}
-                    </div>
-                  </th>
-                  <th scope="col" className="relative w-9 px-3 py-2">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-surface divide-y divide-border">
-                {sortedCases.map((vehicleCase) => (
-                  <tr
-                    key={vehicleCase.id}
-                    className={cn(
-                      'group cursor-pointer border-l-2 border-l-transparent transition-colors odd:bg-surface even:bg-surface/80 hover:bg-surface-muted focus-visible:bg-accent focus-visible:outline-none',
-                      getRowTone(vehicleCase.status)
-                    )}
-                    onClick={() => handleRowClick(vehicleCase.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleRowClick(vehicleCase.id);
-                      }
-                    }}
-                    tabIndex={0}
-                    aria-label={`Open case ${vehicleCase.caseNumber}`}
-                  >
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-surface-muted text-[11px] font-semibold text-muted-foreground">
-                          {vehicleCase.make?.[0] || 'V'}
-                        </span>
-                        <span className="font-mono text-sm font-semibold text-foreground">
-                          {vehicleCase.caseNumber}
-                        </span>
-                        {vehicleCase.policeHold && (
-                          <AlertTriangle className="h-3.5 w-3.5 text-danger" aria-label="Police hold" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      <div>
-                        <div className="text-sm font-medium text-foreground">
-                          {vehicleCase.year} {vehicleCase.make} {vehicleCase.model}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {vehicleCase.color}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                      {vehicleCase.plateNumber ? (
-                        <span className="font-mono">
-                          {vehicleCase.plateNumber}
-                          <span className="ml-1 text-muted-foreground/80">
-                            ({vehicleCase.plateState})
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground/80">-</span>
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead onClick={() => handleSort('caseNumber')} className="cursor-pointer select-none">
+                  <div className="flex items-center gap-1">Case #{renderSortIcon('caseNumber')}</div>
+                </TableHead>
+                <TableHead onClick={() => handleSort('vehicle')} className="cursor-pointer select-none">
+                  <div className="flex items-center gap-1">Vehicle{renderSortIcon('vehicle')}</div>
+                </TableHead>
+                <TableHead>Plate</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead onClick={() => handleSort('daysStored')} className="cursor-pointer select-none">
+                  <div className="flex items-center gap-1">Days{renderSortIcon('daysStored')}</div>
+                </TableHead>
+                <TableHead onClick={() => handleSort('towDate')} className="cursor-pointer select-none">
+                  <div className="flex items-center gap-1">Tow Date{renderSortIcon('towDate')}</div>
+                </TableHead>
+                <TableHead onClick={() => handleSort('balance')} className="text-right cursor-pointer select-none">
+                  <div className="flex items-center gap-1 justify-end">Balance{renderSortIcon('balance')}</div>
+                </TableHead>
+                <TableHead className="relative w-9"><span className="sr-only">Actions</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedCases.map((vehicleCase) => (
+                <TableRow
+                  key={vehicleCase.id}
+                  className={cn(
+                    'group cursor-pointer border-l-2 border-l-transparent transition-colors',
+                    getRowTone(vehicleCase.status)
+                  )}
+                  onClick={() => handleRowClick(vehicleCase.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleRowClick(vehicleCase.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  aria-label={`Open case ${vehicleCase.caseNumber}`}
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-surface-muted text-[11px] font-semibold text-muted-foreground">
+                        {vehicleCase.make?.[0] || 'V'}
+                      </span>
+                      <span className="font-mono text-sm font-semibold text-foreground">
+                        {vehicleCase.caseNumber}
+                      </span>
+                      {vehicleCase.policeHold && (
+                        <AlertTriangle className="h-3.5 w-3.5 text-danger" aria-label="Police hold" />
                       )}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      <StatusBadge status={vehicleCase.status} size="sm" />
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      <span
-                        className={cn(
-                          'text-sm font-medium',
-                          vehicleCase.daysStored >= 30
-                            ? 'text-danger'
-                            : vehicleCase.daysStored >= 14
-                            ? 'text-warning'
-                            : 'text-foreground'
-                        )}
-                      >
-                        {vehicleCase.daysStored}d
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="text-sm font-medium text-foreground">
+                        {vehicleCase.year} {vehicleCase.make} {vehicleCase.model}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {vehicleCase.color}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {vehicleCase.plateNumber ? (
+                      <span className="font-mono">
+                        {vehicleCase.plateNumber}
+                        <span className="ml-1 text-muted-foreground/80">
+                          ({vehicleCase.plateState})
+                        </span>
                       </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                      {formatDate(vehicleCase.towDate)}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                      <span
-                        className={cn(
-                          'font-mono text-sm [font-variant-numeric:tabular-nums]',
-                          getBalanceColor(vehicleCase.balance, vehicleCase.status)
-                        )}
-                      >
-                        {formatCurrency(vehicleCase.balance)}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination / Count */}
-          {data && data.total > sortedCases.length && (
-            <div className="border-t border-border bg-surface-muted px-3 py-2">
-              <p className="text-xs text-muted-foreground">
-                Showing {sortedCases.length} of {data.total} cases
-              </p>
-            </div>
-          )}
+                    ) : (
+                      <span className="text-muted-foreground/80">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={vehicleCase.status} size="sm" />
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={cn(
+                        'text-sm font-medium',
+                        vehicleCase.daysStored >= 30
+                          ? 'text-danger'
+                          : vehicleCase.daysStored >= 14
+                          ? 'text-warning'
+                          : 'text-foreground'
+                      )}
+                    >
+                      {vehicleCase.daysStored}d
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(vehicleCase.towDate)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <span
+                      className={cn(
+                        'font-mono text-sm [font-variant-numeric:tabular-nums]',
+                        getBalanceColor(vehicleCase.balance, vehicleCase.status)
+                      )}
+                    >
+                      {formatCurrency(vehicleCase.balance)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Card>
       )}
 
