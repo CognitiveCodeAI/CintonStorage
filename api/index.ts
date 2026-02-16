@@ -113,6 +113,11 @@ const dashboardRouter = router({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // PAYMENT is modeled via feeTypeId relation, so resolve it first.
+    const paymentFeeType = await ctx.prisma.feeType.findUnique({
+      where: { code: 'PAYMENT' },
+    });
+
     const [totalStored, readyToRelease, onHold, pendingIntake, auctionEligible, todayPayments] =
       await Promise.all([
         ctx.prisma.vehicleCase.count({ where: { status: { in: ['STORED', 'HOLD', 'RELEASE_ELIGIBLE'] } } }),
@@ -120,10 +125,16 @@ const dashboardRouter = router({
         ctx.prisma.vehicleCase.count({ where: { status: 'HOLD' } }),
         ctx.prisma.vehicleCase.count({ where: { status: 'PENDING_INTAKE' } }),
         ctx.prisma.vehicleCase.count({ where: { status: 'AUCTION_ELIGIBLE' } }),
-        ctx.prisma.feeLedgerEntry.aggregate({
-          where: { feeType: 'PAYMENT', createdAt: { gte: today }, voidedAt: null },
-          _sum: { amount: true },
-        }),
+        paymentFeeType
+          ? ctx.prisma.feeLedgerEntry.aggregate({
+              where: {
+                feeTypeId: paymentFeeType.id,
+                createdAt: { gte: today },
+                voidedAt: null,
+              },
+              _sum: { amount: true },
+            })
+          : Promise.resolve({ _sum: { amount: null } }),
       ]);
 
     return {
