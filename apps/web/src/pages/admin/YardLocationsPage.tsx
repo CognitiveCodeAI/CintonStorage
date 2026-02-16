@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '../../components/ui/toast';
-import { Toggle } from '@/components/ui/toggle';
 import {
   Plus,
   MapPin,

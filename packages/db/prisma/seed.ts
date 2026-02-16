@@ -123,6 +123,34 @@ async function main() {
   });
   console.log('Created yard user:', yardUser.email);
 
+  // Create system fee types
+  const systemFeeTypes = [
+    { code: 'TOW', label: 'Tow Fee', description: 'Standard tow service charge', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 1 },
+    { code: 'ADMIN', label: 'Administrative Fee', description: 'Processing and paperwork fee', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 2 },
+    { code: 'STORAGE_DAILY', label: 'Daily Storage', description: 'Per-day storage charge', isSystem: true, isCredit: false, isRecurring: true, displayOrder: 3 },
+    { code: 'GATE', label: 'Gate Fee', description: 'After-hours release fee', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 4 },
+    { code: 'LIEN_PROCESSING', label: 'Lien Processing', description: 'Title/lien processing fee', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 5 },
+    { code: 'TITLE_SEARCH', label: 'Title Search', description: 'Vehicle title search fee', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 6 },
+    { code: 'NOTICE', label: 'Notice Fee', description: 'Compliance notice mailing fee', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 7 },
+    { code: 'DOLLY', label: 'Dolly Service', description: 'Dolly/wheel-lift service', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 8 },
+    { code: 'WINCH', label: 'Winch Service', description: 'Winch recovery service', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 9 },
+    { code: 'MILEAGE', label: 'Mileage', description: 'Per-mile tow charge', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 10 },
+    { code: 'STORAGE_OVERRIDE', label: 'Storage Override', description: 'Manual storage charge override', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 11 },
+    { code: 'ADJUSTMENT', label: 'Adjustment', description: 'Manual fee adjustment', isSystem: true, isCredit: false, isRecurring: false, displayOrder: 12 },
+    { code: 'PAYMENT', label: 'Payment', description: 'Payment received', isSystem: true, isCredit: true, isRecurring: false, displayOrder: 100 },
+  ];
+
+  const feeTypeMap: Record<string, string> = {};
+  for (const ft of systemFeeTypes) {
+    const feeType = await prisma.feeType.upsert({
+      where: { code: ft.code },
+      update: {},
+      create: ft,
+    });
+    feeTypeMap[ft.code] = feeType.id;
+    console.log('Created fee type:', ft.code);
+  }
+
   // Initialize case number sequence for current year
   const currentYear = new Date().getFullYear();
   const twoDigitYear = currentYear % 100;
@@ -157,8 +185,12 @@ async function main() {
       towLocation: '123 Main Street, Clinton Township, MI',
       towingAgencyId: agency.id,
       yardLocation: 'A-1',
-      ownerName: 'John Smith',
-      ownerAddress: '456 Oak Avenue, Detroit, MI 48201',
+      ownerFirstName: 'John',
+      ownerLastName: 'Smith',
+      ownerAddress: '456 Oak Avenue',
+      ownerCity: 'Detroit',
+      ownerState: 'MI',
+      ownerZip: '48201',
       policeHold: false,
       createdById: adminUser.id,
       updatedById: adminUser.id,
@@ -205,8 +237,12 @@ async function main() {
       towLocation: '321 Pine Road, Clinton Township, MI',
       towingAgencyId: agency.id,
       yardLocation: 'C-2',
-      ownerName: 'Sarah Johnson',
-      ownerAddress: '789 Maple Dr, Warren, MI 48092',
+      ownerFirstName: 'Sarah',
+      ownerLastName: 'Johnson',
+      ownerAddress: '789 Maple Dr',
+      ownerCity: 'Warren',
+      ownerState: 'MI',
+      ownerZip: '48092',
       ownerPhone: '586-555-1234',
       policeHold: false,
       releaseEligibleAt: new Date(),
@@ -233,7 +269,7 @@ async function main() {
     const fees = [
       {
         vehicleCaseId: vehicleCase.id,
-        feeType: 'TOW' as const,
+        feeTypeId: feeTypeMap['TOW'],
         description: 'Standard tow fee',
         amount: 150.00,
         accrualDate: vehicleCase.towDate,
@@ -241,7 +277,7 @@ async function main() {
       },
       {
         vehicleCaseId: vehicleCase.id,
-        feeType: 'ADMIN' as const,
+        feeTypeId: feeTypeMap['ADMIN'],
         description: 'Administrative fee',
         amount: 50.00,
         accrualDate: vehicleCase.towDate,
@@ -259,7 +295,7 @@ async function main() {
       storageDate.setDate(storageDate.getDate() + i);
       fees.push({
         vehicleCaseId: vehicleCase.id,
-        feeType: 'STORAGE_DAILY' as const,
+        feeTypeId: feeTypeMap['STORAGE_DAILY'],
         description: 'Daily storage fee',
         amount: 45.00,
         accrualDate: storageDate,

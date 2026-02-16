@@ -113,6 +113,9 @@ const dashboardRouter = router({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Get PAYMENT fee type ID
+    const paymentFeeType = await ctx.prisma.feeType.findUnique({ where: { code: 'PAYMENT' } });
+
     const [totalStored, readyToRelease, onHold, pendingIntake, auctionEligible, todayPayments] =
       await Promise.all([
         ctx.prisma.vehicleCase.count({ where: { status: { in: ['STORED', 'HOLD', 'RELEASE_ELIGIBLE'] } } }),
@@ -120,10 +123,12 @@ const dashboardRouter = router({
         ctx.prisma.vehicleCase.count({ where: { status: 'HOLD' } }),
         ctx.prisma.vehicleCase.count({ where: { status: 'PENDING_INTAKE' } }),
         ctx.prisma.vehicleCase.count({ where: { status: 'AUCTION_ELIGIBLE' } }),
-        ctx.prisma.feeLedgerEntry.aggregate({
-          where: { feeType: 'PAYMENT', createdAt: { gte: today }, voidedAt: null },
-          _sum: { amount: true },
-        }),
+        paymentFeeType
+          ? ctx.prisma.feeLedgerEntry.aggregate({
+              where: { feeTypeId: paymentFeeType.id, createdAt: { gte: today }, voidedAt: null },
+              _sum: { amount: true },
+            })
+          : Promise.resolve({ _sum: { amount: null } }),
       ]);
 
     return {
@@ -209,7 +214,11 @@ const vehicleCaseRouter = router({
         where: { id: input.id },
         include: {
           towingAgency: true,
-          feeLedgerEntries: { where: { voidedAt: null }, orderBy: { accrualDate: 'desc' } },
+          feeLedgerEntries: {
+            where: { voidedAt: null },
+            orderBy: { accrualDate: 'desc' },
+            include: { feeType: true },
+          },
           createdBy: { select: { id: true, name: true } },
           updatedBy: { select: { id: true, name: true } },
         },
@@ -281,6 +290,29 @@ const vehicleCaseRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Case not in pending intake status' });
       }
 
+      // Lookup fee type IDs
+      const [towFeeType, adminFeeType] = await Promise.all([
+        ctx.prisma.feeType.findUnique({ where: { code: 'TOW' } }),
+        ctx.prisma.feeType.findUnique({ where: { code: 'ADMIN' } }),
+      ]);
+
+      if (!towFeeType || !adminFeeType) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'System fee types not configured' });
+      }
+
+      // Get fee amounts from PolicyConfig or use defaults
+      const [towConfig, adminConfig] = await Promise.all([
+        ctx.prisma.policyConfig.findFirst({
+          where: { policyType: 'FEE_SCHEDULE', name: 'TOW', effectiveTo: null },
+        }),
+        ctx.prisma.policyConfig.findFirst({
+          where: { policyType: 'FEE_SCHEDULE', name: 'ADMIN', effectiveTo: null },
+        }),
+      ]);
+
+      const towAmount = (towConfig?.config as { baseAmount?: number })?.baseAmount ?? 150;
+      const adminAmount = (adminConfig?.config as { baseAmount?: number })?.baseAmount ?? 50;
+
       const nextStatus = vehicleCase.policeHold ? 'HOLD' : 'STORED';
 
       const updated = await ctx.prisma.vehicleCase.update({
@@ -296,8 +328,8 @@ const vehicleCaseRouter = router({
 
       await ctx.prisma.feeLedgerEntry.createMany({
         data: [
-          { vehicleCaseId: vehicleCase.id, feeType: 'TOW', description: 'Standard tow fee', amount: 150, accrualDate: vehicleCase.towDate, createdById: ctx.user.id },
-          { vehicleCaseId: vehicleCase.id, feeType: 'ADMIN', description: 'Administrative fee', amount: 50, accrualDate: vehicleCase.towDate, createdById: ctx.user.id },
+          { vehicleCaseId: vehicleCase.id, feeTypeId: towFeeType.id, description: 'Standard tow fee', amount: towAmount, accrualDate: vehicleCase.towDate, createdById: ctx.user.id },
+          { vehicleCaseId: vehicleCase.id, feeTypeId: adminFeeType.id, description: 'Administrative fee', amount: adminAmount, accrualDate: vehicleCase.towDate, createdById: ctx.user.id },
         ],
       });
 
@@ -317,11 +349,17 @@ const vehicleCaseRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot record payment for released vehicle' });
       }
 
+      // Lookup PAYMENT fee type ID
+      const paymentFeeType = await ctx.prisma.feeType.findUnique({ where: { code: 'PAYMENT' } });
+      if (!paymentFeeType) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Payment fee type not configured' });
+      }
+
       // Create payment entry (negative amount for payment)
       await ctx.prisma.feeLedgerEntry.create({
         data: {
           vehicleCaseId: input.caseId,
-          feeType: 'PAYMENT',
+          feeTypeId: paymentFeeType.id,
           description: `Payment (${input.paymentMethod})`,
           amount: -input.amount,
           accrualDate: new Date(),
@@ -689,29 +727,151 @@ const adminAgenciesRouter = router({
     }),
 });
 
+// Admin Fee Types Router (CRUD for custom fee types)
+const adminFeeTypesRouter = router({
+  list: protectedProcedure
+    .input(z.object({ includeInactive: z.boolean().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const where: Record<string, unknown> = {};
+      if (!input?.includeInactive) {
+        where.active = true;
+      }
+      return ctx.prisma.feeType.findMany({
+        where,
+        orderBy: { displayOrder: 'asc' },
+      });
+    }),
+
+  getById: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const feeType = await ctx.prisma.feeType.findUnique({ where: { id: input.id } });
+      if (!feeType) throw new TRPCError({ code: 'NOT_FOUND' });
+      return feeType;
+    }),
+
+  create: protectedProcedure
+    .input(z.object({
+      code: z.string().min(1).max(50).regex(/^[A-Z_]+$/, 'Code must be uppercase with underscores only'),
+      label: z.string().min(1).max(100),
+      description: z.string().optional(),
+      isCredit: z.boolean().default(false),
+      isRecurring: z.boolean().default(false),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.feeType.findUnique({ where: { code: input.code } });
+      if (existing) {
+        throw new TRPCError({ code: 'CONFLICT', message: 'Fee type code already exists' });
+      }
+
+      // Get max display order
+      const maxOrder = await ctx.prisma.feeType.aggregate({ _max: { displayOrder: true } });
+      const nextOrder = (maxOrder._max.displayOrder || 0) + 1;
+
+      return ctx.prisma.feeType.create({
+        data: {
+          code: input.code,
+          label: input.label,
+          description: input.description || null,
+          isSystem: false,
+          isCredit: input.isCredit,
+          isRecurring: input.isRecurring,
+          displayOrder: nextOrder,
+          active: true,
+        },
+      });
+    }),
+
+  update: protectedProcedure
+    .input(z.object({
+      id: z.string().uuid(),
+      label: z.string().min(1).max(100).optional(),
+      description: z.string().optional(),
+      isCredit: z.boolean().optional(),
+      isRecurring: z.boolean().optional(),
+      displayOrder: z.number().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const feeType = await ctx.prisma.feeType.findUnique({ where: { id: input.id } });
+      if (!feeType) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      // System types have limited editing
+      if (feeType.isSystem) {
+        // Only allow changing label and description for system types
+        return ctx.prisma.feeType.update({
+          where: { id: input.id },
+          data: {
+            label: input.label ?? feeType.label,
+            description: input.description ?? feeType.description,
+          },
+        });
+      }
+
+      return ctx.prisma.feeType.update({
+        where: { id: input.id },
+        data: {
+          label: input.label ?? feeType.label,
+          description: input.description ?? feeType.description,
+          isCredit: input.isCredit ?? feeType.isCredit,
+          isRecurring: input.isRecurring ?? feeType.isRecurring,
+          displayOrder: input.displayOrder ?? feeType.displayOrder,
+        },
+      });
+    }),
+
+  toggleActive: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const feeType = await ctx.prisma.feeType.findUnique({ where: { id: input.id } });
+      if (!feeType) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (feeType.isSystem) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot deactivate system fee types' });
+      }
+
+      return ctx.prisma.feeType.update({
+        where: { id: input.id },
+        data: { active: !feeType.active },
+      });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const feeType = await ctx.prisma.feeType.findUnique({ where: { id: input.id } });
+      if (!feeType) throw new TRPCError({ code: 'NOT_FOUND' });
+      if (feeType.isSystem) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot delete system fee types' });
+      }
+
+      // Check if fee type has been used
+      const usageCount = await ctx.prisma.feeLedgerEntry.count({ where: { feeTypeId: input.id } });
+      if (usageCount > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot delete fee type that has been used. Deactivate it instead.',
+        });
+      }
+
+      return ctx.prisma.feeType.delete({ where: { id: input.id } });
+    }),
+});
+
 // Admin Fee Schedule Router
 const adminFeeScheduleRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
+    // Get all active fee types from database (excluding PAYMENT which is for credits)
+    const feeTypes = await ctx.prisma.feeType.findMany({
+      where: { active: true, isCredit: false },
+      orderBy: { displayOrder: 'asc' },
+    });
+
+    // Get all fee schedule configs
     const configs = await ctx.prisma.policyConfig.findMany({
       where: { policyType: 'FEE_SCHEDULE', effectiveTo: null },
       orderBy: { name: 'asc' },
     });
 
-    // Define default fee types and their labels
-    const feeTypes = [
-      { feeType: 'TOW', label: 'Tow Fee', description: 'Standard tow service charge' },
-      { feeType: 'ADMIN', label: 'Administrative Fee', description: 'Processing and paperwork fee' },
-      { feeType: 'STORAGE_DAILY', label: 'Daily Storage', description: 'Per-day storage charge' },
-      { feeType: 'GATE', label: 'Gate Fee', description: 'After-hours release fee' },
-      { feeType: 'LIEN_PROCESSING', label: 'Lien Processing', description: 'Title/lien processing fee' },
-      { feeType: 'TITLE_SEARCH', label: 'Title Search', description: 'Vehicle title search fee' },
-      { feeType: 'NOTICE', label: 'Notice Fee', description: 'Compliance notice mailing fee' },
-      { feeType: 'DOLLY', label: 'Dolly Service', description: 'Dolly/wheel-lift service' },
-      { feeType: 'WINCH', label: 'Winch Service', description: 'Winch recovery service' },
-      { feeType: 'MILEAGE', label: 'Mileage', description: 'Per-mile tow charge' },
-    ];
-
-    // Map configs to fee types, using defaults for missing configs
+    // Default amounts for system fee types
     const defaultAmounts: Record<string, number> = {
       TOW: 150,
       ADMIN: 50,
@@ -726,13 +886,16 @@ const adminFeeScheduleRouter = router({
     };
 
     return feeTypes.map((ft) => {
-      const config = configs.find((c) => c.name === ft.feeType);
+      const config = configs.find((c) => c.name === ft.code);
       const configData = (config?.config || {}) as Record<string, unknown>;
       return {
-        feeType: ft.feeType,
+        id: ft.id,
+        feeType: ft.code,
         label: ft.label,
-        description: ft.description,
-        baseAmount: (configData.baseAmount as number) ?? defaultAmounts[ft.feeType] ?? 0,
+        description: ft.description || '',
+        isSystem: ft.isSystem,
+        isRecurring: ft.isRecurring,
+        baseAmount: (configData.baseAmount as number) ?? defaultAmounts[ft.code] ?? 0,
         vehicleClassAmounts: (configData.vehicleClassAmounts || {}) as Record<string, number>,
       };
     });
@@ -1097,6 +1260,7 @@ const adminRouter = router({
   users: adminUsersRouter,
   roles: adminRolesRouter,
   agencies: adminAgenciesRouter,
+  feeTypes: adminFeeTypesRouter,
   feeSchedule: adminFeeScheduleRouter,
   yard: adminYardRouter,
   settings: adminSettingsRouter,

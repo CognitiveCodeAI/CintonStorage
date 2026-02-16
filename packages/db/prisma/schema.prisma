@@ -59,21 +59,7 @@ enum VehicleClass {
   TRAILER
 }
 
-enum FeeType {
-  TOW
-  ADMIN
-  STORAGE_DAILY
-  GATE
-  LIEN_PROCESSING
-  TITLE_SEARCH
-  NOTICE
-  DOLLY
-  WINCH
-  MILEAGE
-  STORAGE_OVERRIDE
-  ADJUSTMENT
-  PAYMENT
-}
+// FeeType is now a database table, not an enum - see FeeType model below
 
 enum PaymentMethod {
   CASH
@@ -225,15 +211,34 @@ enum PolicyType {
 // MODELS
 // ============================================
 
+model FeeType {
+  id           String   @id @default(uuid())
+  code         String   @unique          // e.g., "TOW", "HAZMAT_CLEANUP"
+  label        String                    // e.g., "Tow Fee"
+  description  String?
+  isSystem     Boolean  @default(false) @map("is_system")  // Protected system types
+  isCredit     Boolean  @default(false) @map("is_credit")  // Negative amount (like PAYMENT)
+  isRecurring  Boolean  @default(false) @map("is_recurring")  // Daily charges (like STORAGE_DAILY)
+  active       Boolean  @default(true)
+  displayOrder Int      @default(0)     @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt      @map("updated_at")
+
+  // Relations
+  feeLedgerEntries FeeLedgerEntry[]
+
+  @@map("fee_types")
+}
+
 model User {
   id              String    @id @default(uuid())
   email           String    @unique
   name            String
   passwordHash    String    @map("password_hash")
   roleId          String    @map("role_id")
-  role            Role      @relation(fields: [roleId], references: [id])
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
   agencyId        String?   @map("agency_id")
-  agency          Agency?   @relation(fields: [agencyId], references: [id])
+  agency          Agency?   @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   active          Boolean   @default(true)
   lastLoginAt     DateTime? @map("last_login_at")
   passwordChangedAt DateTime? @map("password_changed_at")
@@ -249,6 +254,7 @@ model User {
   auctionLots           AuctionLot[]
   policyConfigs         PolicyConfig[]
 
+  @@index([agencyId])
   @@map("users")
 }
 
@@ -345,7 +351,7 @@ model VehicleCase {
   towReason       TowReason @map("tow_reason")
   towLocation     String    @map("tow_location")
   towingAgencyId  String?   @map("towing_agency_id")
-  towingAgency    Agency?   @relation(fields: [towingAgencyId], references: [id])
+  towingAgency    Agency?   @relation(fields: [towingAgencyId], references: [id], onDelete: SetNull)
   yardLocation    String?   @map("yard_location")
 
   // Owner/lienholder
@@ -358,6 +364,10 @@ model VehicleCase {
   ownerPhone        String? @map("owner_phone")
   lienholderName    String? @map("lienholder_name")
   lienholderAddress String? @map("lienholder_address")
+  lienholderCity    String? @map("lienholder_city")
+  lienholderState   String? @map("lienholder_state")
+  lienholderZip     String? @map("lienholder_zip")
+  lienholderPhone   String? @map("lienholder_phone")
 
   // Police/legal
   policeHold        Boolean   @default(false) @map("police_hold")
@@ -380,9 +390,9 @@ model VehicleCase {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   createdById String   @map("created_by_id")
-  createdBy   User     @relation("VehicleCaseCreatedBy", fields: [createdById], references: [id])
+  createdBy   User     @relation("VehicleCaseCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   updatedById String   @map("updated_by_id")
-  updatedBy   User     @relation("VehicleCaseUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User     @relation("VehicleCaseUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
 
   // Relations
   feeLedgerEntries   FeeLedgerEntry[]
@@ -396,6 +406,10 @@ model VehicleCase {
   @@index([towDate])
   @@index([caseNumber])
   @@index([policeHold])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([releaseEligibleAt])
+  @@index([auctionEligibleAt])
   @@map("vehicle_cases")
 }
 
@@ -403,7 +417,8 @@ model FeeLedgerEntry {
   id            String        @id @default(uuid())
   vehicleCaseId String        @map("vehicle_case_id")
   vehicleCase   VehicleCase   @relation(fields: [vehicleCaseId], references: [id], onDelete: Cascade)
-  feeType       FeeType       @map("fee_type")
+  feeTypeId     String        @map("fee_type_id")
+  feeType       FeeType       @relation(fields: [feeTypeId], references: [id], onDelete: Restrict)
   description   String
   amount        Decimal       @db.Decimal(10, 2) // Positive = charge, negative = payment
   accrualDate   DateTime      @map("accrual_date")
@@ -414,12 +429,13 @@ model FeeLedgerEntry {
   voidedAt      DateTime?     @map("voided_at")
   voidReason    String?       @map("void_reason")
   createdById   String        @map("created_by_id")
-  createdBy     User          @relation(fields: [createdById], references: [id])
+  createdBy     User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdAt     DateTime      @default(now()) @map("created_at")
 
   @@index([vehicleCaseId])
   @@index([accrualDate])
-  @@index([feeType])
+  @@index([feeTypeId])
+  @@index([vehicleCaseId, voidedAt])
   @@map("fee_ledger_entries")
 }
 
@@ -445,7 +461,7 @@ model ComplianceNotice {
   hearingResult   HearingResult? @map("hearing_result")
   metadata        Json           @default("{}")
   createdById     String         @map("created_by_id")
-  createdBy       User           @relation(fields: [createdById], references: [id])
+  createdBy       User           @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
@@ -468,7 +484,7 @@ model CaseDocument {
   fileSize      Int          @map("file_size") // bytes
   metadata      Json         @default("{}")
   uploadedById  String       @map("uploaded_by_id")
-  uploadedBy    User         @relation(fields: [uploadedById], references: [id])
+  uploadedBy    User         @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
   createdAt     DateTime     @default(now()) @map("created_at")
 
   @@index([vehicleCaseId])
@@ -486,14 +502,14 @@ model AuctionLot {
   status        AuctionLotStatus @default(PENDING)
   winningBid    Decimal?        @db.Decimal(10, 2) @map("winning_bid")
   buyerId       String?         @map("buyer_id")
-  buyer         AuctionBuyer?   @relation(fields: [buyerId], references: [id])
+  buyer         AuctionBuyer?   @relation(fields: [buyerId], references: [id], onDelete: SetNull)
   saleRecordedAt DateTime?      @map("sale_recorded_at")
   titleStatus   TitleStatus     @default(PENDING) @map("title_status")
   payoutCompleted Boolean       @default(false) @map("payout_completed")
   payoutCompletedAt DateTime?   @map("payout_completed_at")
   metadata      Json            @default("{}")
   createdById   String          @map("created_by_id")
-  createdBy     User            @relation(fields: [createdById], references: [id])
+  createdBy     User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
@@ -534,11 +550,12 @@ model PolicyConfig {
   effectiveTo   DateTime?  @map("effective_to")
   mclReferences Json?      @map("mcl_references") // Michigan MCL references
   createdById   String     @map("created_by_id")
-  createdBy     User       @relation(fields: [createdById], references: [id])
+  createdBy     User       @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
   @@index([policyType, effectiveFrom, effectiveTo])
+  @@index([effectiveFrom, effectiveTo])
   @@map("policy_configs")
 }
 

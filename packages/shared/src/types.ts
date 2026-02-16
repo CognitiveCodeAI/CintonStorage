@@ -43,21 +43,39 @@ export enum VehicleClass {
   TRAILER = 'TRAILER',
 }
 
-export enum FeeType {
-  TOW = 'TOW',
-  ADMIN = 'ADMIN',
-  STORAGE_DAILY = 'STORAGE_DAILY',
-  GATE = 'GATE',
-  LIEN_PROCESSING = 'LIEN_PROCESSING',
-  TITLE_SEARCH = 'TITLE_SEARCH',
-  NOTICE = 'NOTICE',
-  DOLLY = 'DOLLY',
-  WINCH = 'WINCH',
-  MILEAGE = 'MILEAGE',
-  STORAGE_OVERRIDE = 'STORAGE_OVERRIDE',
-  ADJUSTMENT = 'ADJUSTMENT',
-  PAYMENT = 'PAYMENT',
+// FeeType is now a database entity, not an enum
+export interface FeeType {
+  id: string;
+  code: string;
+  label: string;
+  description: string | null;
+  isSystem: boolean;
+  isCredit: boolean;
+  isRecurring: boolean;
+  active: boolean;
+  displayOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+// System fee type codes (for reference)
+export const SYSTEM_FEE_TYPE_CODES = [
+  'TOW',
+  'ADMIN',
+  'STORAGE_DAILY',
+  'GATE',
+  'LIEN_PROCESSING',
+  'TITLE_SEARCH',
+  'NOTICE',
+  'DOLLY',
+  'WINCH',
+  'MILEAGE',
+  'STORAGE_OVERRIDE',
+  'ADJUSTMENT',
+  'PAYMENT',
+] as const;
+
+export type SystemFeeTypeCode = typeof SYSTEM_FEE_TYPE_CODES[number];
 
 export enum AgencyType {
   POLICE = 'POLICE',
@@ -97,6 +115,10 @@ export interface VehicleCase {
   ownerPhone: string | null;
   lienholderName: string | null;
   lienholderAddress: string | null;
+  lienholderCity: string | null;
+  lienholderState: string | null;
+  lienholderZip: string | null;
+  lienholderPhone: string | null;
   policeHold: boolean;
   holdExpiresAt: Date | null;
   policeCaseNumber: string | null;
@@ -130,7 +152,8 @@ export interface VehicleCaseSummary {
 export interface FeeLedgerEntry {
   id: string;
   vehicleCaseId: string;
-  feeType: FeeType;
+  feeTypeId: string;
+  feeType?: FeeType;
   description: string;
   amount: number;
   accrualDate: Date;
